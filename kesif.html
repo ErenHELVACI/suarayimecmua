@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eserleri Keşfet — Şuarâ-yı Mecmua</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <nav class="nav" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-ar">شعراء</span>
+        <span class="logo-tr">Şuarâ-yı Mecmua</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="kesif.html" class="active">Keşfet</a></li>
+        <li><a href="paylasim.html">Eser Paylaş</a></li>
+        <li><a href="tescil.html">Tescil Sorgula</a></li>
+        <li><a href="hakkinda.html">Hakkında</a></li>
+      </ul>
+      <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+      </button>
+      <button class="nav-toggle" aria-label="Menü">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="kesif.html">Keşfet</a>
+      <a href="paylasim.html">Eser Paylaş</a>
+      <a href="tescil.html">Tescil Sorgula</a>
+      <a href="hakkinda.html">Hakkında</a>
+    </div>
+  </nav>
+
+  <section class="page-hero reveal">
+    <div class="container">
+      <h1>Eserleri Keşfet</h1>
+      <p>Dünya ve Türk edebiyatının derinliklerine inin, tescilli şairlerin seçkin eserlerini okuyun.</p>
+
+      <div class="search-bar-wrap">
+        <input type="text" id="searchInput" placeholder="Şiir adı, şair veya tescil kodu ara...">
+        <button id="searchBtn">Ara</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="filter-row reveal">
+        <button class="filter-btn active">Tümü</button>
+        <button class="filter-btn">Şiir</button>
+        <button class="filter-btn">Gazel</button>
+        <button class="filter-btn">Kaside</button>
+        <button class="filter-btn">Serbest Şiir</button>
+        <button class="filter-btn">Hikâye</button>
+      </div>
+
+      <div class="poems-grid reveal" id="poemsGrid">
+        <!-- Şiirler JavaScript tarafından (main.js) buraya dinamik olarak yüklenecek -->
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2025 Şuarâ-yı Mecmua. Tüm hakları saklıdır.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

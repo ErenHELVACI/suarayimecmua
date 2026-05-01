@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tescil Sorgula — Şuarâ-yı Mecmua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-ar">شعراء</span>
+      <span class="logo-tr">Şuarâ-yı Mecmua</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="kesif.html">Keşfet</a></li>
+      <li><a href="paylasim.html">Eser Paylaş</a></li>
+      <li><a href="tescil.html" class="active">Tescil Sorgula</a></li>
+      <li><a href="hakkinda.html">Hakkında</a></li>
+    </ul>
+    <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+    </button>
+    <button class="nav-toggle" aria-label="Menü">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="kesif.html">Keşfet</a>
+    <a href="paylasim.html">Eser Paylaş</a>
+    <a href="tescil.html">Tescil Sorgula</a>
+    <a href="hakkinda.html">Hakkında</a>
+  </div>
+</nav>
+
+<section class="page-hero reveal">
+  <div class="container">
+    <h1>Tescil Doğrulama Sistemi</h1>
+    <p>Herhangi bir eserin telif ve mülkiyet haklarını doğrulamak için tescil kodunu girin. Veritabanımız anlık olarak sorgulanacaktır.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width: 680px;">
+    
+    <div class="tescil-big-form reveal">
+      <input type="text" id="tescilInputBig" placeholder="Örn: TM-2024-07302" maxlength="14">
+      <button id="detayliBtn" onclick="detayliSorguTescil()">Sorgula</button>
+    </div>
+
+    <div class="tescil-result-box" id="tescilResultBox">
+      <h3 class="result-title">Tescil Kaydı Bulundu</h3>
+      
+      <div class="result-row">
+        <div class="result-key">Eser Adı</div>
+        <div class="result-val">Aşk Üzerine Gazeller</div>
+      </div>
+      <div class="result-row">
+        <div class="result-key">Şair / Yazar Adı</div>
+        <div class="result-val">Selin Yıldırım</div>
+      </div>
+      <div class="result-row">
+        <div class="result-key">Tescil Tarihi</div>
+        <div class="result-val" style="font-family: var(--font-sans); font-size:1rem;">12 Mart 2024, 14:30:12</div>
+      </div>
+      <div class="result-row">
+        <div class="result-key">Eser Türü</div>
+        <div class="result-val">Gazel</div>
+      </div>
+      <div class="result-row">
+        <div class="result-key">Mülkiyet Durumu</div>
+        <div class="result-val">
+          <span class="result-badge-ok">DOĞRULANDI VE KORUMA ALTINDA</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 Şuarâ-yı Mecmua. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+// ============================
+// ŞUARÂ-YI MECMUA — main.js
+// ULTRA GELİŞMİŞ SÜRÜM
+// ============================
+
+// Firebase Ayarları
+const firebaseConfig = {
+  apiKey: "AIzaSyC45yc5_pgD7Pb9FNFLhKHjlpt4T19rQfc",
+  authDomain: "suarayimecmua.firebaseapp.com",
+  projectId: "suarayimecmua",
+  storageBucket: "suarayimecmua.firebasestorage.app",
+  messagingSenderId: "984768059887",
+  appId: "1:984768059887:web:9456dea4067a70c234fe1a",
+  measurementId: "G-Q2XYNT65HQ"
+};
+// Firebase'i başlat
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    initScrollAnimations();
+    initNavbarState();
+    setupMobileMenu();
+    setupTypewriter();
+    renderPoems(); // Şiirleri Firebase'den yükle
+    renderKlasikler(); // Klasikleri yükle (Eğer klasikler.html ise çalışır)
+    initFilters(); 
+    initSearch(); // Arama çubuğunu aktifleştir
+    initAuth(); // Üyelik butonlarını ayarla
+    
+    // Eğer eser.html sayfasındaysak eseri yükle
+    if(window.location.pathname.includes('eser.html')) {
+        loadEserSayfasi();
+    }
+});
+
+// --- AUTH (ÜYELİK SİSTEMİ) ---
+function initAuth() {
+    const navLinks = document.querySelector('.nav-links');
+    const navMobile = document.getElementById('navMobile');
+    
+    if(navLinks) {
+        const authLi = document.createElement('li');
+        authLi.id = "authDesktop";
+        navLinks.appendChild(authLi);
+    }
+    
+    if(navMobile) {
+        const authDiv = document.createElement('div');
+        authDiv.id = "authMobile";
+        authDiv.style.marginTop = "1.5rem";
+        navMobile.appendChild(authDiv);
+    }
+
+    auth.onAuthStateChanged((user) => {
+        const desktop = document.getElementById('authDesktop');
+        const mobile = document.getElementById('authMobile');
+        
+        if(user) {
+            const html = `<a href="profil.html" class="btn btn-outline" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem; border-color:var(--gold); color:var(--gold);">Profilim</a>`;
+            if(desktop) desktop.innerHTML = html;
+            if(mobile) mobile.innerHTML = html;
+            
+            // Eğer profil sayfasındaysak bilgileri çek
+            if(window.location.pathname.includes('profil.html')) {
+                yukleProfil(user);
+            }
+        } else {
+            const html = `<a href="auth.html" class="btn btn-primary" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem;">Giriş / Kayıt</a>`;
+            if(desktop) desktop.innerHTML = html;
+            if(mobile) mobile.innerHTML = html;
+            
+            // Profil sayfasında ama giriş yapmamışsa anasayfaya at
+            if(window.location.pathname.includes('profil.html')) {
+                window.location.href = 'index.html';
+            }
+        }
+    });
+}
+
+function switchAuthTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    
+    if(tab === 'giris') {
+        document.getElementById('tabGiris').classList.add('active');
+        document.getElementById('formGiris').classList.add('active');
+    } else {
+        document.getElementById('tabKayit').classList.add('active');
+        document.getElementById('formKayit').classList.add('active');
+    }
+}
+
+async function kayitOl(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnReg');
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pass = document.getElementById('regPass').value;
+    
+    btn.innerHTML = 'Kayıt Olunuyor...';
+    btn.disabled = true;
+    
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+        
+        // E-posta doğrulama gönder (İstediğiniz özellik)
+        await userCredential.user.sendEmailVerification();
+        
+        // Kullanıcı profilini veritabanına kaydet
+        await db.collection("Kullanicilar").doc(userCredential.user.uid).set({
+            isim: name,
+            email: email,
+            kayitTarihi: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        showToast('Kayıt Başarılı!', 'E-posta adresinize doğrulama linki gönderildi. Lütfen onaylayın.', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+        
+    } catch(err) {
+        btn.innerHTML = 'Hesap Oluştur';
+        btn.disabled = false;
+        showToast('Hata', err.message, 'error');
+    }
+}
+
+async function girisYap(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnLogin');
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    
+    btn.innerHTML = 'Giriş Yapılıyor...';
+    btn.disabled = true;
+    
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        showToast('Hoş Geldiniz', 'Başarıyla giriş yapıldı.', 'success');
+        setTimeout(() => { window.location.href = 'paylasim.html'; }, 1500);
+    } catch(err) {
+        btn.innerHTML = 'Sisteme Gir';
+        btn.disabled = false;
+        showToast('Hata', 'E-posta veya şifre hatalı!', 'error');
+    }
+}
+
+function cikisYap(event) {
+    if(event) event.preventDefault();
+    auth.signOut().then(() => {
+        showToast('Çıkış', 'Hesabınızdan çıkış yapıldı.', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    });
+}
+
+// --- PROFİL VE ADMİN İŞLEMLERİ ---
+async function yukleProfil(user) {
+    const pName = document.getElementById('profilName');
+    const pEmail = document.getElementById('profilEmail');
+    const pRole = document.getElementById('profilRole');
+    const adminPanel = document.getElementById('adminPanel');
+    const grid = document.getElementById('myPoemsGrid');
+    
+    if(!pName) return; 
+    
+    try {
+        const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
+        if(userDoc.exists) {
+            const data = userDoc.data();
+            pName.innerText = data.isim || "İsimsiz Yazar";
+            pEmail.innerText = user.email;
+            
+            if(data.rol === "admin") {
+                pRole.innerText = "Yönetici (Admin)";
+                pRole.style.color = "var(--gold)";
+                adminPanel.style.display = "block";
+            }
+        } else {
+            pName.innerText = "Misafir Yazar";
+            pEmail.innerText = user.email;
+        }
+        
+        // Kullanıcının eserlerini çek
+        const snapshot = await db.collection("Eserler").where("sahipUid", "==", user.uid).get();
+        grid.innerHTML = '';
+        if(snapshot.empty) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; color:var(--text-muted);">Henüz bir eser tescillemediniz.</p>';
+        } else {
+            snapshot.forEach(doc => {
+                const eser = doc.data();
+                let kisaMetin = eser.metin;
+                const misralar = eser.metin.split('<br>');
+                if(misralar.length > 4) {
+                    kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'poem-card reveal active';
+                card.style.cursor = 'pointer';
+                card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
+                card.innerHTML = `
+                    <div class="poem-card-tag">${eser.tur}</div>
+                    <h3 class="poem-card-title">${eser.baslik}</h3>
+                    <div class="poem-excerpt"><p>${kisaMetin}</p></div>
+                    <div class="poem-card-footer">
+                      <div class="poem-card-author"><span style="font-size:0.8rem">${eser.id}</span></div>
+                      <span class="poem-card-code" style="color:var(--green-ok); font-size:0.8rem">✓ Tescilli</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    } catch(err) {
+        console.error(err);
+        pName.innerText = "Bilgiler alınamadı.";
+    }
+}
+
+async function topluSiirYukle() {
+    const fileInput = document.getElementById('bulkUploadFile');
+    const btn = document.getElementById('btnBulkUpload');
+    
+    if(!fileInput.files.length) {
+        showToast('Uyarı', 'Lütfen bir JSON dosyası seçin.', 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = async function(e) {
+        try {
+            const siirler = JSON.parse(e.target.result);
+            if(!Array.isArray(siirler)) throw new Error("Dizi formatında değil");
+            
+            btn.innerHTML = 'Yükleniyor...';
+            btn.disabled = true;
+            
+            const batch = db.batch();
+            siirler.forEach((eser) => {
+                const randid = Math.floor(100000 + Math.random() * 900000);
+                const docRef = db.collection("Klasikler").doc("KLASIK-BULK-" + randid);
+                batch.set(docRef, eser);
+            });
+            
+            await batch.commit();
+            showToast('Başarılı', `${siirler.length} adet şiir veritabanına eklendi!`, 'success');
+            btn.innerHTML = 'Toplu Şiir Yükle';
+            btn.disabled = false;
+            fileInput.value = '';
+        } catch(err) {
+            console.error(err);
+            showToast('Hata', 'Dosya okunurken hata oluştu. Lütfen doğru formatta JSON yükleyin.', 'error');
+            btn.innerHTML = 'Toplu Şiir Yükle';
+            btn.disabled = false;
+        }
+    };
+    reader.readAsText(file);
+}
+
+// --- ŞİİR VERİTABANI (TÜRK ŞAİRLER SİMÜLASYONU) ---
+const turkSiirleri = [
+    {
+        id: "TM-2024-00101",
+        baslik: "Sessiz Gemi",
+        tur: "Şiir",
+        yazar: "Yahya Kemal Beyatlı",
+        kisaltma: "YK",
+        metin: "Artık demir almak günü gelmişse zamandan,<br>Meçhule giden bir gemi kalkar bu limandan."
+    },
+    {
+        id: "TM-2024-00102",
+        baslik: "Anlatamıyorum",
+        tur: "Serbest Şiir",
+        yazar: "Orhan Veli Kanık",
+        kisaltma: "OV",
+        metin: "Ağlasam sesimi duyar mısınız,<br>Mısralarımda;<br>Dokunabilir misiniz,<br>Gözyaşlarıma, ellerinizle?"
+    },
+    {
+        id: "TM-2024-00103",
+        baslik: "Beklenen",
+        tur: "Şiir",
+        yazar: "Necip Fazıl Kısakürek",
+        kisaltma: "NF",
+        metin: "Ne hasta bekler sabahı,<br>Ne taze ölüyü mezar.<br>Ne de şeytan, bir günahı,<br>Seni beklediğim kadar."
+    },
+    {
+        id: "TM-2024-00104",
+        baslik: "Desem Ki",
+        tur: "Serbest Şiir",
+        yazar: "Cahit Sıtkı Tarancı",
+        kisaltma: "CS",
+        metin: "Desem ki vakitlerden bir nisan akşamıdır,<br>Rüzgârların en ferahlatıcısı senden esiyor..."
+    },
+    {
+        id: "TM-2024-00105",
+        baslik: "Sevgilerde",
+        tur: "Şiir",
+        yazar: "Behçet Necatigil",
+        kisaltma: "BN",
+        metin: "Sevgileri yarınlara bıraktınız<br>Çekingen, tutuk, saygılı."
+    },
+    {
+        id: "TM-2024-00106",
+        baslik: "Üçüncü Şahsın Şiiri",
+        tur: "Şiir",
+        yazar: "Attilâ İlhan",
+        kisaltma: "Aİ",
+        metin: "Gözlerin gözlerime değince<br>Felâketim olurdu ağlardım..."
+    },
+    {
+        id: "TM-2024-00107",
+        baslik: "Sevi Şiiri",
+        tur: "Serbest Şiir",
+        yazar: "Ümit Yaşar Oğuzcan",
+        kisaltma: "ÜO",
+        metin: "Ben senin en çok sesini sevdim<br>Buğulu, çoğu zaman taze bir ekmek gibi..."
+    },
+    {
+        id: "TM-2024-00108",
+        baslik: "Mona Roza",
+        tur: "Şiir",
+        yazar: "Sezai Karakoç",
+        kisaltma: "SK",
+        metin: "Mona Roza siyah güller, ak güller<br>Geyve'nin gülleri ve beyaz yatak..."
+    }
+];
+
+async function renderPoems(filtre = "Tümü") {
+    const grid = document.getElementById('poemsGrid');
+    if(!grid) return;
+    
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Veritabanından Eserler Yükleniyor...</p>';
+    
+    try {
+        const snapshot = await db.collection("Eserler").orderBy("tarih", "desc").get();
+        
+        // Eğer veritabanı tamamen boşsa, varsayılan (Türk şairler) dizisini veritabanına otomatik yükleyelim (Seed)
+        if(snapshot.empty && turkSiirleri.length > 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--gold); font-size:1.1rem; padding: 3rem 0;">Veritabanı kuruluyor, eserler aktarılıyor...</p>';
+            const batch = db.batch();
+            turkSiirleri.forEach(eser => {
+                const docRef = db.collection("Eserler").doc(eser.id);
+                batch.set(docRef, {
+                    ...eser,
+                    tarih: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+            await batch.commit();
+            turkSiirleri.length = 0; // Bir daha girmemesi için
+            return renderPoems(filtre); // Yeniden çağır
+        }
+
+        grid.innerHTML = '';
+        const eserler = [];
+        snapshot.forEach(doc => eserler.push(doc.data()));
+        
+        const filtrelenmis = filtre === "Tümü" ? eserler : eserler.filter(e => e.tur === filtre);
+        
+        if(filtrelenmis.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; font-style:italic; padding: 3rem 0;">Bu kategoride henüz eser tescillenmedi.</p>';
+            return;
+        }
+
+        filtrelenmis.forEach((eser, index) => {
+            const gecikme = index * 0.1;
+            
+            let kisaMetin = eser.metin;
+            const misralar = eser.metin.split('<br>');
+            if(misralar.length > 4) {
+                kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'poem-card reveal active';
+            card.style.transitionDelay = gecikme + 's';
+            card.style.cursor = 'pointer';
+            card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
+            
+            card.innerHTML = `
+                <div class="poem-card-tag">${eser.tur}</div>
+                <h3 class="poem-card-title">${eser.baslik}</h3>
+                <div class="poem-excerpt"><p>${kisaMetin}</p></div>
+                <div class="poem-card-footer">
+                  <div class="poem-card-author"><div class="author-avatar">${eser.kisaltma || eser.yazar.charAt(0).toUpperCase()}</div><span>${eser.yazar}</span></div>
+                  <span class="poem-card-code">${eser.id}</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    } catch(err) {
+        console.error("Firebase Hatası:", err);
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--red-accent);">Bağlantı hatası: Veritabanına ulaşılamadı.</p>';
+    }
+}
+
+function initFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    if(filterBtns.length === 0) return;
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const container = e.target.parentElement;
+            container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            // Filtre tıklandığında aramayı da sıfırla
+            const sInput = document.getElementById('searchInput');
+            if(sInput) sInput.value = '';
+            
+            if(container.id === 'klasikFilters') {
+                renderKlasikler(e.target.innerText);
+            } else {
+                renderPoems(e.target.innerText);
+            }
+        });
+    });
+}
+
+// --- ARAMA İŞLEVİ (HIZLI DOM FİLTRELEME) ---
+function initSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    if(!searchInput || !searchBtn) return;
+    
+    function executeSearch() {
+        const q = searchInput.value.trim().toLowerCase();
+        const grid = document.getElementById('poemsGrid') || document.getElementById('klasiklerGrid');
+        if(!grid) return;
+        
+        const cards = grid.querySelectorAll('.poem-card');
+        
+        cards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            if(text.includes(q)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    searchBtn.addEventListener('click', executeSearch);
+    searchInput.addEventListener('keyup', executeSearch); // Harf girdikçe otomatik arasın
+}
+
+// --- TEMA (DARK/LIGHT MODE) ---
+function initTheme() {
+    const themeBtn = document.getElementById('themeToggle');
+    if(!themeBtn) return;
+    
+    // SVG Icons
+    const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    const sunIcon = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    themeBtn.querySelector('svg').innerHTML = currentTheme === 'dark' ? sunIcon : moonIcon;
+
+    themeBtn.addEventListener('click', () => {
+        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        localStorage.setItem('theme', currentTheme);
+        themeBtn.querySelector('svg').innerHTML = currentTheme === 'dark' ? sunIcon : moonIcon;
+    });
+}
+
+// --- NAVBAR SCROLL STATE ---
+function initNavbarState() {
+    const nav = document.getElementById('navbar');
+    if(!nav) return;
+    window.addEventListener('scroll', () => {
+        if(window.scrollY > 50) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    });
+}
+
+// --- MOBIL MENÜ ---
+function setupMobileMenu() {
+    const toggles = document.querySelectorAll('.nav-toggle');
+    const navMobile = document.getElementById('navMobile');
+    
+    if(!navMobile || toggles.length === 0) return;
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'mobile-overlay';
+    document.body.appendChild(overlay);
+
+    function toggleMenu() {
+        toggles.forEach(t => t.classList.toggle('open'));
+        navMobile.classList.toggle('open');
+        overlay.classList.toggle('open');
+        document.body.style.overflow = navMobile.classList.contains('open') ? 'hidden' : '';
+    }
+
+    toggles.forEach(toggle => {
+        toggle.addEventListener('click', toggleMenu);
+    });
+    overlay.addEventListener('click', toggleMenu);
+}
+
+// --- SCROLL ANIMATIONS (AOS Alternative) ---
+function initScrollAnimations() {
+    const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+    reveals.forEach(el => observer.observe(el));
+}
+
+// --- TOAST NOTIFICATIONS ---
+function showToast(title, message, type = 'success') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let iconStr = type === 'success' ? '✓' : '✕';
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${iconStr}</div>
+        <div class="toast-content">
+            <span class="toast-title">${title}</span>
+            <span class="toast-msg">${message}</span>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Remove after 4s
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 4000);
+}
+
+// --- TESCİL SORGULA (ANASAYFA) ---
+async function sorguTescil() {
+    const input = document.getElementById('tescilInput');
+    const sonucBox = document.getElementById('tescilSonuc');
+    const loader = document.getElementById('tescilLoader');
+    
+    if (!input || !sonucBox || !loader) return;
+
+    const val = input.value.trim().toUpperCase();
+    if (val === '') {
+        showToast('Hata', 'Lütfen bir tescil kodu girin.', 'error');
+        return;
+    }
+
+    sonucBox.style.display = 'none';
+    loader.style.display = 'block';
+
+    try {
+        const docRef = await db.collection("Eserler").doc(val).get();
+        loader.style.display = 'none';
+        sonucBox.style.display = 'block';
+        
+        if (docRef.exists) {
+            sonucBox.innerHTML = '<span style="color:var(--green-ok); font-weight:600;">✓ KORUMA ALTINDA:</span> Bu kod doğrulanmış bir edebi esere aittir.';
+            showToast('Başarılı', 'Eser kaydı bulundu.', 'success');
+        } else {
+            sonucBox.innerHTML = '<span style="color:var(--red-accent); font-weight:600;">✕ KAYIT BULUNAMADI:</span> Girdiğiniz koda ait tescil tespit edilemedi.';
+            showToast('Bulunamadı', 'Geçersiz veya hatalı kod.', 'error');
+        }
+    } catch(err) {
+        loader.style.display = 'none';
+        showToast('Hata', 'Sorgu sırasında veritabanına ulaşılamadı.', 'error');
+    }
+}
+
+// --- DETAYLI TESCİL SORGULA (SAYFA) ---
+async function detayliSorguTescil() {
+    const input = document.getElementById('tescilInputBig');
+    const resultBox = document.getElementById('tescilResultBox');
+    const btn = document.getElementById('detayliBtn');
+    
+    if(!input || !resultBox) return;
+    
+    const val = input.value.trim().toUpperCase();
+    if(val === '') {
+        showToast('Eksik Bilgi', 'Tescil kodu alanı boş bırakılamaz.', 'error');
+        return;
+    }
+    
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Aranıyor...';
+    btn.style.opacity = '0.7';
+    resultBox.style.display = 'none';
+    
+    try {
+        const docRef = await db.collection("Eserler").doc(val).get();
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        
+        if(docRef.exists) {
+            const eser = docRef.data();
+            const tarihStr = eser.tarih ? eser.tarih.toDate().toLocaleString('tr-TR') : 'Bilinmiyor';
+            
+            resultBox.innerHTML = `
+                <h3 class="result-title">Tescil Kaydı Bulundu</h3>
+                <div class="result-row"><div class="result-key">Eser Adı</div><div class="result-val">${eser.baslik}</div></div>
+                <div class="result-row"><div class="result-key">Şair / Yazar Adı</div><div class="result-val">${eser.yazar}</div></div>
+                <div class="result-row"><div class="result-key">Tescil Tarihi</div><div class="result-val" style="font-family: var(--font-sans); font-size:1rem;">${tarihStr}</div></div>
+                <div class="result-row"><div class="result-key">Eser Türü</div><div class="result-val">${eser.tur}</div></div>
+                <div class="result-row"><div class="result-key">Mülkiyet Durumu</div><div class="result-val"><span class="result-badge-ok">DOĞRULANDI VE KORUMA ALTINDA</span></div></div>
+            `;
+            
+            resultBox.style.display = 'block';
+            showToast('Eser Bulundu', 'Tescil kaydı başarıyla getirildi.', 'success');
+        } else {
+            showToast('Kayıt Yok', 'Sistemde böyle bir tescil kodu bulunamadı.', 'error');
+        }
+    } catch(err) {
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        showToast('Hata', 'Sorgu sırasında veritabanına ulaşılamadı.', 'error');
+    }
+}
+
+// --- ESER PAYLAŞIM FORMU ---
+async function submitEser(event) {
+    event.preventDefault();
+    
+    // OTURUM KONTROLÜ
+    const user = auth.currentUser;
+    if(!user) {
+        showToast('Yetkisiz İşlem', 'Eser tescil etmek için önce giriş yapmalısınız.', 'error');
+        setTimeout(() => { window.location.href = 'auth.html'; }, 2000);
+        return;
+    }
+
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    
+    // Form verilerini al
+    const form = event.target;
+    const baslik = form.querySelector('input[placeholder="Örn: Sessiz Gemi"]').value.trim();
+    const yazar = form.querySelector('input[placeholder="Kendi adınız veya mahlasınız"]').value.trim();
+    const tur = form.querySelector('select').value;
+    const metin = form.querySelector('textarea').value.trim();
+    
+    if(!baslik || !yazar || !metin) {
+        showToast('Eksik Bilgi', 'Lütfen tüm alanları doldurun.', 'error');
+        return;
+    }
+    
+    btn.innerHTML = 'İntihal Taraması Yapılıyor...';
+    btn.style.opacity = '0.7';
+    
+    // --- İNTİHAL (KOPYA) KONTROL SİSTEMİ ---
+    try {
+        const cleanMetin = metin.toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
+        let intihalKodu = null;
+        
+        // 1. Eserler (Kullanıcı Tescilleri) Taraması
+        const eserlerSnap = await db.collection("Eserler").get();
+        eserlerSnap.forEach(doc => {
+            const rawOld = doc.data().metin || "";
+            const cleanOld = rawOld.replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
+            // Eğer boşluksuz/noktalamasız metinler tamamen aynıysa, veya biri diğerinin içinde geçiyorsa
+            if(cleanOld === cleanMetin || (cleanMetin.includes(cleanOld) && cleanOld.length > 20) || (cleanOld.includes(cleanMetin) && cleanMetin.length > 20)) {
+                intihalKodu = doc.id;
+            }
+        });
+        
+        // 2. Klasikler Taraması
+        if(!intihalKodu) {
+            const klasiklerSnap = await db.collection("Klasikler").get();
+            klasiklerSnap.forEach(doc => {
+                const rawOld = doc.data().metin || "";
+                const cleanOld = rawOld.replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
+                if(cleanOld === cleanMetin || (cleanMetin.includes(cleanOld) && cleanOld.length > 20) || (cleanOld.includes(cleanMetin) && cleanMetin.length > 20)) {
+                    intihalKodu = doc.id;
+                }
+            });
+        }
+        
+        // Eğer kopya bulunduysa kaydetmeyi reddet
+        if(intihalKodu) {
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+            showToast('İntihal Tespit Edildi!', `Bu eser zaten sistemimizde [${intihalKodu}] koduyla tescillidir. Başkasının eserini alamazsınız.`, 'error');
+            return;
+        }
+    } catch(err) {
+        console.error("İntihal Taraması Hatası:", err);
+    }
+
+    btn.innerHTML = 'Tescilleniyor...';
+    
+    // Benzersiz Tescil Kodu
+    const tescilKodu = "TM-2025-" + Math.floor(10000 + Math.random() * 90000);
+    
+    try {
+        await db.collection("Eserler").doc(tescilKodu).set({
+            id: tescilKodu,
+            baslik: baslik,
+            yazar: yazar,
+            tur: tur,
+            metin: metin.replace(/\n/g, '<br>'), // satır atlamalarını koru
+            kisaltma: yazar.charAt(0).toUpperCase(),
+            tarih: firebase.firestore.FieldValue.serverTimestamp(),
+            sahipUid: user.uid,       // Eseri yükleyen kişinin Firebase kimliği
+            sahipEmail: user.email    // Eseri yükleyen kişinin e-postası
+        });
+        
+        // --- EMAILJS İLE TESCİL MAİLİ GÖNDERME ---
+        try {
+            emailjs.init("xCey005-FS4NnPHWS");
+            await emailjs.send("service_73nxjfr", "template_ueem53r", {
+                user_email: user.email,
+                user_name: yazar,
+                eser_baslik: baslik,
+                tescil_kodu: tescilKodu
+            });
+            console.log("Tescil maili başarıyla gönderildi!");
+        } catch (mailErr) {
+            console.error("Mail gönderim hatası:", mailErr);
+        }
+        
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        showToast('Tescil Başarılı', 'Eseriniz kaydedildi ve tescil kodunuz e-postanıza gönderildi!', 'success');
+        form.reset();
+        
+    } catch(err) {
+        console.error("Kayıt Hatası:", err);
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        showToast('Hata', 'Kayıt sırasında sunucu hatası oluştu.', 'error');
+    }
+}
+
+// --- TYPEWRITER EFFECT ---
+function setupTypewriter() {
+    const tw = document.querySelector('.typewriter');
+    if(!tw) return;
+    
+    const text = tw.getAttribute('data-text');
+    tw.innerHTML = '';
+    let i = 0;
+    
+    function type() {
+        if (i < text.length) {
+            tw.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, 50);
+        }
+    }
+    
+    setTimeout(type, 500);
+}
+
+// --- USTA ŞAİRLER (KLASİKLER) VERİTABANI ---
+const klasikSiirler = [
+    { yazar: "Nazım Hikmet", baslik: "Mavi Gözlü Dev", metin: "O mavi gözlü bir devdi.<br>Minnacık bir kadın sevdi.<br>Kadının hayali minnacık bir evdi..." },
+    { yazar: "Nazım Hikmet", baslik: "Tahir ile Zühre", metin: "Tahir olmak da ayıp değil Zühre olmak da<br>hattâ sevda yüzünden ölmek de ayıp değil..." },
+    { yazar: "Orhan Veli", baslik: "Anlatamıyorum", metin: "Ağlasam sesimi duyar mısınız,<br>Mısralarımda;<br>Dokunabilir misiniz,<br>Gözyaşlarıma, ellerinizle?" },
+    { yazar: "Orhan Veli", baslik: "İstanbul'u Dinliyorum", metin: "İstanbul'u dinliyorum, gözlerim kapalı<br>Önce hafiften bir rüzgar esiyor..." },
+    { yazar: "Cemal Süreya", baslik: "Üvercinka", metin: "Böylece bir kere daha boynunlayız sayılı yerlerinden<br>En uzun boynun bu senin dayanmaya ya da umudu kesmemeye..." },
+    { yazar: "Cemal Süreya", baslik: "Biliyorum Sana Giden...", metin: "Biliyorum sana giden yollar kapalı<br>Üstelik sen de hiç bir zaman sevmedin beni..." },
+    { yazar: "Necip Fazıl", baslik: "Kaldırımlar", metin: "Sokaktayım, kimsesiz bir sokak ortasında;<br>Yürüyorum, arkama bakmadan yürüyorum." },
+    { yazar: "Necip Fazıl", baslik: "Beklenen", metin: "Ne hasta bekler sabahı,<br>Ne taze ölüyü mezar.<br>Ne de şeytan, bir günahı,<br>Seni beklediğim kadar." },
+    { yazar: "Attilâ İlhan", baslik: "Ben Sana Mecburum", metin: "Ben sana mecburum bilemezsin<br>Adını mıh gibi aklımda tutuyorum..." },
+    { yazar: "Attilâ İlhan", baslik: "Üçüncü Şahsın Şiiri", metin: "Gözlerin gözlerime değince<br>Felâketim olurdu ağlardım..." },
+    { yazar: "Özdemir Asaf", baslik: "Lavinia", metin: "Sana gitme demeyeceğim.<br>Üşüyorsun ceketimi al.<br>Günün en güzel saatleri bunlar.<br>Yanımda kal." },
+    { yazar: "Turgut Uyar", baslik: "Göğe Bakma Durağı", metin: "İkimiz birden sevinebiliriz göğe bakalım<br>Şu kaçamak ışıklardan şu şeker kamışlarından..." },
+    { yazar: "Cahit Sıtkı Tarancı", baslik: "Otuz Beş Yaş", metin: "Yaş otuz beş! Yolun yarısı eder.<br>Dante gibi ortasındayız ömrün." }
+];
+
+async function renderKlasikler(filtre = "Tümü") {
+    const grid = document.getElementById('klasiklerGrid');
+    if(!grid) return;
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Ölümsüz eserler veritabanından getiriliyor...</p>';
+    
+    try {
+        const snapshot = await db.collection("Klasikler").get();
+        
+        // Eğer Firebase'de Klasikler koleksiyonu henüz oluşmadıysa otomatik aktarım yapalım
+        if(snapshot.empty && klasikSiirler.length > 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--gold); font-size:1.1rem; padding: 3rem 0;">Klasikler veritabanına kuruluyor, lütfen bekleyin...</p>';
+            const batch = db.batch();
+            klasikSiirler.forEach((eser, i) => {
+                const docRef = db.collection("Klasikler").doc("KLASIK-" + (i + 1));
+                batch.set(docRef, eser);
+            });
+            await batch.commit();
+            klasikSiirler.length = 0; // Bir daha girmemesi için boşalt
+            return renderKlasikler(filtre); // Veritabanından tekrar çek
+        }
+
+        grid.innerHTML = '';
+        const eserler = [];
+        snapshot.forEach(doc => {
+            let data = doc.data();
+            data.id = doc.id; // Firebase doküman ID'sini al
+            eserler.push(data);
+        });
+        
+        let filtrelenmis = eserler;
+        if(filtre !== "Tümü") {
+            if(filtre === "Diğerleri") {
+                const ustalar = ["Nazım Hikmet", "Orhan Veli", "Cemal Süreya", "Necip Fazıl", "Attilâ İlhan"];
+                filtrelenmis = eserler.filter(s => !ustalar.includes(s.yazar));
+            } else {
+                filtrelenmis = eserler.filter(s => s.yazar === filtre);
+            }
+        }
+        
+        if(filtrelenmis.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; font-style:italic; padding: 3rem 0;">Eser bulunamadı.</p>';
+            return;
+        }
+        
+        filtrelenmis.forEach((eser, index) => {
+            const gecikme = index * 0.1;
+            
+            let kisaMetin = eser.metin;
+            const misralar = eser.metin.split('<br>');
+            if(misralar.length > 4) {
+                kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'poem-card reveal active';
+            card.style.transitionDelay = gecikme + 's';
+            card.style.cursor = 'pointer';
+            card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
+            
+            card.innerHTML = `
+                <div class="klasik-badge">Ölümsüz Eser</div>
+                <h3 class="poem-card-title" style="margin-top:1rem;">${eser.baslik}</h3>
+                <div class="poem-excerpt"><p>${kisaMetin}</p></div>
+                <div class="poem-card-footer">
+                  <div class="poem-card-author">
+                    <div class="author-avatar">${eser.yazar.charAt(0)}</div>
+                    <span style="font-weight:600; color:var(--gold)">${eser.yazar}</span>
+                  </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+    } catch(err) {
+        console.error("Klasikler Hatası:", err);
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--red-accent);">Bağlantı hatası: Veritabanına ulaşılamadı.</p>';
+    }
+}
+
+// --- TEKİL ESER GÖRÜNTÜLEME (eser.html) ---
+async function loadEserSayfasi() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    
+    if(!id) {
+        document.getElementById('eTitle').innerText = "Eser Bulunamadı";
+        document.getElementById('eText').innerText = "URL'de tescil veya eser kodu eksik.";
+        return;
+    }
+    
+    try {
+        let docRef;
+        if(id.startsWith("KLASIK")) {
+            docRef = await db.collection("Klasikler").doc(id).get();
+        } else {
+            docRef = await db.collection("Eserler").doc(id).get();
+        }
+        
+        if(!docRef.exists) {
+            document.getElementById('eTitle').innerText = "Hata 404";
+            document.getElementById('eText').innerText = "Sistemimizde bu koda ait bir eser bulunmamaktadır.";
+            return;
+        }
+        
+        const eser = docRef.data();
+        document.getElementById('eTitle').innerText = eser.baslik;
+        document.getElementById('eAuthor').innerText = eser.yazar;
+        document.getElementById('eText').innerHTML = eser.metin;
+        document.getElementById('eCode').innerText = id;
+        
+        if(eser.tarih && eser.tarih.toDate) {
+            document.getElementById('eDate').innerText = eser.tarih.toDate().toLocaleDateString('tr-TR');
+        } else {
+            document.getElementById('eDate').innerText = "Arşiv Kaydı";
+        }
+        
+        // BEĞENİ SİSTEMİ
+        const likes = eser.likes || [];
+        const likeCountEl = document.getElementById('likeCount');
+        const btnLike = document.getElementById('btnLike');
+        const likeIcon = document.getElementById('likeIcon');
+        
+        likeCountEl.innerText = likes.length;
+        
+        auth.onAuthStateChanged(user => {
+            if(user && likes.includes(user.uid)) {
+                likeIcon.setAttribute('fill', 'var(--red-accent)');
+            }
+            
+            btnLike.onclick = async () => {
+                if(!user) {
+                    showToast('Hata', 'Eserleri beğenmek için giriş yapmalısınız.', 'error');
+                    return;
+                }
+                
+                try {
+                    const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
+                    const ref = db.collection(colName).doc(id);
+                    
+                    // Beğeni işlemini (Like/Unlike) yap
+                    if(likes.includes(user.uid)) {
+                        await ref.set({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) }, { merge: true });
+                        likeIcon.setAttribute('fill', 'none');
+                        likes.splice(likes.indexOf(user.uid), 1); // Yerel listeyi güncelle
+                    } else {
+                        await ref.set({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) }, { merge: true });
+                        likeIcon.setAttribute('fill', 'var(--red-accent)');
+                        likes.push(user.uid); // Yerel listeyi güncelle
+                    }
+                    likeCountEl.innerText = likes.length;
+                } catch(err) {
+                    console.error("Beğeni eklenirken hata:", err);
+                    showToast('Hata', 'Veritabanı erişim engeli (Firebase Rules hatası).', 'error');
+                }
+            };
+        });
+        
+        // Yetki kontrolü (Silme işlemi için)
+        checkAdminSil(id, eser);
+        
+    } catch(err) {
+        console.error("Eser yüklenirken hata:", err);
+        document.getElementById('eTitle').innerText = "Bağlantı Koptu";
+        document.getElementById('eText').innerText = "Veritabanından eser çekilemedi. Lütfen sayfayı yenileyin.";
+    }
+}
+
+// --- ADMİN VEYA ESER SAHİBİ SİLME İŞLEMİ ---
+function checkAdminSil(eserId, eserData) {
+    auth.onAuthStateChanged(async (user) => {
+        if(user) {
+            let yetkili = false;
+            
+            // Eserin sahibi mi?
+            if(eserData && eserData.sahipUid === user.uid) {
+                yetkili = true;
+            }
+            
+            // Eğer eserin sahibi değilse, admin mi diye kontrol et
+            if(!yetkili) {
+                const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
+                if(userDoc.exists && userDoc.data().rol === "admin") {
+                    yetkili = true;
+                }
+            }
+            
+            if(yetkili) {
+                const actionContainer = document.getElementById('adminActionContainer');
+                if(actionContainer) {
+                    if(eserData && eserData.sahipUid === user.uid) {
+                        const p = actionContainer.querySelector('p');
+                        if(p) p.innerText = "Bu eser size ait olduğu için onu veritabanından silebilirsiniz.";
+                    }
+                    actionContainer.style.display = 'block';
+                    document.getElementById('btnSil').onclick = async () => {
+                        const onay = confirm("Bu eseri KALICI olarak silmek istediğinize emin misiniz? (Bu işlem geri alınamaz)");
+                        if(onay) {
+                            try {
+                                const colName = eserId.startsWith("KLASIK") ? "Klasikler" : "Eserler";
+                                await db.collection(colName).doc(eserId).delete();
+                                showToast('Silindi', 'Eser veritabanından kalıcı olarak kaldırıldı.', 'success');
+                                setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                            } catch(err) {
+                                console.error(err);
+                                showToast('Hata', 'Silme işlemi başarısız oldu.', 'error');
+                            }
+                        }
+                    };
+                }
+            }
+        }
+    });
+}
+
+// --- RESİM OLARAK İNDİR (INSTAGRAM İÇİN) ---
+function indirResim() {
+    if (typeof window.html2canvas === 'undefined') {
+        showToast('Hata', 'Görsel motoru yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.', 'error');
+        return;
+    }
+
+    const box = document.getElementById('eserReaderBox');
+    const btnContainer = box.querySelector('.eser-actions');
+    const adminContainer = document.getElementById('adminActionContainer');
+    
+    if(!box) return;
+
+    showToast('Hazırlanıyor...', 'Eser resme dönüştürülüyor, lütfen bekleyin...', 'success');
+
+    // Admin/Sil butonunun resim çekilmeden önceki görünürlük durumu
+    const adminGorunurMu = adminContainer && adminContainer.style.display !== 'none';
+
+    // Resimde butonların çıkmaması için geçici olarak gizle
+    if(btnContainer) btnContainer.style.display = 'none';
+    if(adminContainer) adminContainer.style.display = 'none';
+    
+    // Rengi sabitle (css variable boşluklarını temizleyerek)
+    const cardColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#ffffff';
+    const bodyColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-body').trim() || '#ffffff';
+    box.style.background = cardColor;
+    
+    html2canvas(box, {
+        scale: 2, // 2x yüksek çözünürlük
+        useCORS: true,
+        backgroundColor: bodyColor,
+        logging: false
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'suarayimecmua-eser.png';
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link); // Firefox ve eski Chrome uyumluluğu
+        link.click();
+        document.body.removeChild(link);
+        
+        // Butonları resim işlemi bittikten sonra eski haline getir
+        if(btnContainer) btnContainer.style.display = 'flex';
+        if(adminGorunurMu) adminContainer.style.display = 'block';
+        
+        showToast('Başarılı', 'Şiir cihazınıza mükemmel kalitede kaydedildi!', 'success');
+    }).catch(err => {
+        console.error("Resim oluşturma hatası:", err);
+        showToast('Hata', 'Resim oluşturulamadı. Sorun tarayıcınızdan kaynaklanıyor olabilir.', 'error');
+        if(btnContainer) btnContainer.style.display = 'flex';
+        if(adminGorunurMu) adminContainer.style.display = 'block';
+    });
+}

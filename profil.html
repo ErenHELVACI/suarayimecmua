@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profilim — Şuarâ-yı Mecmua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-ar">شعراء</span>
+      <span class="logo-tr">Şuarâ-yı Mecmua</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="kesif.html">Keşfet</a></li>
+      <li><a href="klasikler.html">Klasikler</a></li>
+      <li><a href="paylasim.html">Eser Paylaş</a></li>
+      <li><a href="tescil.html">Tescil Sorgula</a></li>
+      <li><a href="hakkinda.html">Hakkında</a></li>
+    </ul>
+    <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+    </button>
+    <button class="nav-toggle" aria-label="Menü">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="kesif.html">Keşfet</a>
+    <a href="klasikler.html">Klasikler</a>
+    <a href="paylasim.html">Eser Paylaş</a>
+    <a href="tescil.html">Tescil Sorgula</a>
+    <a href="hakkinda.html">Hakkında</a>
+  </div>
+</nav>
+
+<section class="section" style="padding-top: 8rem; min-height: 80vh;">
+  <div class="container">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-tag" id="profilRole">Kullanıcı Profili</p>
+        <h2 id="profilName">Yükleniyor...</h2>
+        <p style="color:var(--text-muted);" id="profilEmail"></p>
+      </div>
+      <button onclick="cikisYap(event)" class="btn btn-outline" style="border-color:var(--red-accent); color:var(--red-accent); padding: 0.5rem 1.5rem; height: max-content;">Çıkış Yap</button>
+    </div>
+
+    <!-- ADMİN PANELİ -->
+    <div id="adminPanel" style="display:none; background: rgba(212,175,55,0.05); border: 1px solid var(--gold); padding: 2rem; border-radius: var(--r); margin-bottom: 3rem;" class="reveal">
+      <h3 style="color:var(--gold); margin-bottom: 1rem;">👑 Yönetici (Admin) Paneli</h3>
+      <p style="margin-bottom: 1rem;">"Klasikler" arşivine tek tıkla yüzlerce eser yüklemek için bir JSON dosyası seçin.</p>
+      <input type="file" id="bulkUploadFile" accept=".json" style="margin-bottom: 1rem; display:block; padding: 1rem; background: var(--bg-body); border: 1px solid var(--border-color); border-radius: var(--r); width: 100%; max-width: 400px; color: var(--text);">
+      <button class="btn btn-primary" id="btnBulkUpload" onclick="topluSiirYukle()">Toplu Şiir Yükle</button>
+    </div>
+
+    <!-- TESCİLLİ ESERLERİM -->
+    <h3 style="margin-bottom: 1.5rem;" class="reveal">Tescillediğim Eserler</h3>
+    <div class="poems-grid reveal" id="myPoemsGrid">
+      <p style="grid-column: 1/-1; color:var(--text-muted);">Eserleriniz yükleniyor...</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 Şuarâ-yı Mecmua. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

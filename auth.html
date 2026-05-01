@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giriş / Kayıt — Şuarâ-yı Mecmua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .auth-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    border-radius: var(--r);
+    padding: 3rem 2rem;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+  }
+  .auth-tab {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    transition: var(--trans);
+  }
+  .auth-tab.active {
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .auth-form {
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  .auth-form.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .auth-form input {
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r);
+    color: var(--text);
+    font-family: var(--font-sans);
+    margin-bottom: 1.5rem;
+  }
+  .auth-form button {
+    width: 100%;
+  }
+  .verification-note {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-ar">شعراء</span>
+      <span class="logo-tr">Şuarâ-yı Mecmua</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="kesif.html">Keşfet</a></li>
+      <li><a href="paylasim.html">Eser Paylaş</a></li>
+      <li><a href="tescil.html">Tescil Sorgula</a></li>
+      <li><a href="hakkinda.html">Hakkında</a></li>
+    </ul>
+    <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+    </button>
+    <button class="nav-toggle" aria-label="Menü">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="kesif.html">Keşfet</a>
+    <a href="paylasim.html">Eser Paylaş</a>
+    <a href="tescil.html">Tescil Sorgula</a>
+    <a href="hakkinda.html">Hakkında</a>
+  </div>
+</nav>
+
+<section class="auth-wrapper">
+  <div class="auth-card reveal">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabGiris" onclick="switchAuthTab('giris')">Giriş Yap</div>
+      <div class="auth-tab" id="tabKayit" onclick="switchAuthTab('kayit')">Kayıt Ol</div>
+    </div>
+
+    <!-- GİRİŞ FORMU -->
+    <form id="formGiris" class="auth-form active" onsubmit="girisYap(event)">
+      <input type="email" id="loginEmail" placeholder="E-Posta Adresiniz" required>
+      <input type="password" id="loginPass" placeholder="Şifreniz" required>
+      <button type="submit" class="btn btn-primary" id="btnLogin">Sisteme Gir</button>
+    </form>
+
+    <!-- KAYIT FORMU -->
+    <form id="formKayit" class="auth-form" onsubmit="kayitOl(event)">
+      <input type="text" id="regName" placeholder="Adınız Soyadınız" required>
+      <input type="email" id="regEmail" placeholder="E-Posta Adresiniz" required>
+      <input type="password" id="regPass" placeholder="Şifreniz (En az 6 karakter)" required minlength="6">
+      <button type="submit" class="btn btn-secondary" id="btnReg">Hesap Oluştur</button>
+      <p class="verification-note">Kayıt olduktan sonra e-posta adresinize bir doğrulama maili gönderilecektir.</p>
+    </form>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
