@@ -970,3 +970,14 @@ img { display: block; max-width: 100%; }
   .eser-actions { flex-direction: column; width: 100%; }
   .eser-actions .btn { width: 100%; }
 }
+
+/* Poem Reader Navigation */
+.nav-link-btn {
+  transition: var(--transition);
+}
+.nav-link-btn:hover {
+  opacity: 1 !important;
+  color: var(--gold-dark) !important;
+}
+#prevPoem:hover { transform: translateX(-4px); }
+#nextPoem:hover { transform: translateX(4px); }

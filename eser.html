@@ -109,8 +109,20 @@
 
 <div class="container">
   <div class="eser-reader reveal" id="eserReaderBox">
-     <h1 class="eser-reader-title" id="eTitle">Yükleniyor...</h1>
-     <p class="eser-reader-author" id="eAuthor">Lütfen Bekleyin</p>
+      <!-- ÖNCEKİ - SONRAKİ NAVİGASYONU -->
+      <div id="poemNavigation" style="display:none; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px dashed var(--border-soft); padding-bottom: 1rem;">
+        <a id="prevPoem" href="#" class="nav-link-btn" style="display:flex; align-items:center; gap:0.5rem; color:var(--text-muted); font-size:0.9rem; transition:0.3s; text-decoration:none; opacity:0.6;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Önceki Şiir
+        </a>
+        <a id="nextPoem" href="#" class="nav-link-btn" style="display:flex; align-items:center; gap:0.5rem; color:var(--text-muted); font-size:0.9rem; transition:0.3s; text-decoration:none; opacity:0.6;">
+            Sonraki Şiir
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </a>
+      </div>
+
+      <h1 class="eser-reader-title" id="eTitle">Yükleniyor...</h1>
+      <p class="eser-reader-author" id="eAuthor">Lütfen Bekleyin</p>
      
      <div class="eser-reader-text" id="eText">
         Arşiv bağlantısı kuruluyor, eser sayfaya çekiliyor...

@@ -966,6 +966,9 @@ async function loadEserSayfasi() {
             document.getElementById('eDate').innerText = "Arşiv Kaydı";
         }
         
+        // Navigasyon Ayarları
+        setupPoemNavigation(colName, eser.yazar, id);
+
         // BEĞENİ SİSTEMİ
         const likes = eser.likes || [];
         const likeCountEl = document.getElementById('likeCount');
@@ -1040,6 +1043,60 @@ async function loadEserSayfasi() {
         console.error("Eser yüklenirken hata:", err);
         document.getElementById('eTitle').innerText = "Bağlantı Koptu";
         document.getElementById('eText').innerText = "Veritabanından eser çekilemedi. Lütfen sayfayı yenileyin.";
+    }
+}
+
+// --- AYNI YAZARIN DİĞER ŞİİRLERİ ARASINDA GEÇİŞ ---
+async function setupPoemNavigation(colName, yazar, currentId) {
+    const navDiv = document.getElementById('poemNavigation');
+    const prevBtn = document.getElementById('prevPoem');
+    const nextBtn = document.getElementById('nextPoem');
+
+    if(!navDiv || !prevBtn || !nextBtn) return;
+
+    try {
+        // Aynı yazarın tüm eserlerini çek (basitlik için tarihe veya başlığa göre sıralanabilir)
+        const snapshot = await db.collection(colName).where("yazar", "==", yazar).get();
+        if(snapshot.size <= 1) {
+            navDiv.style.display = 'none';
+            return;
+        }
+
+        const poems = [];
+        snapshot.forEach(doc => {
+            poems.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Mevcut şiirin indeksini bul
+        const currentIndex = poems.findIndex(p => p.id === currentId);
+
+        if(currentIndex > 0) {
+            const prev = poems[currentIndex - 1];
+            prevBtn.href = `eser.html?id=${prev.id}`;
+            prevBtn.style.opacity = '1';
+            prevBtn.style.pointerEvents = 'auto';
+            prevBtn.title = prev.baslik;
+        } else {
+            prevBtn.style.opacity = '0.3';
+            prevBtn.style.pointerEvents = 'none';
+        }
+
+        if(currentIndex < poems.length - 1) {
+            const next = poems[currentIndex + 1];
+            nextBtn.href = `eser.html?id=${next.id}`;
+            nextBtn.style.opacity = '1';
+            nextBtn.style.pointerEvents = 'auto';
+            nextBtn.title = next.baslik;
+        } else {
+            nextBtn.style.opacity = '0.3';
+            nextBtn.style.pointerEvents = 'none';
+        }
+
+        navDiv.style.display = 'flex';
+
+    } catch(err) {
+        console.error("Navigasyon yüklenemedi:", err);
+        navDiv.style.display = 'none';
     }
 }
 
