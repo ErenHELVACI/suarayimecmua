@@ -18,6 +18,7 @@
     <ul class="nav-links">
       <li><a href="kesif.html">Keşfet</a></li>
       <li><a href="klasikler.html">Klasikler</a></li>
+      <li><a href="sairler.html">Şairler</a></li>
       <li><a href="paylasim.html">Eser Paylaş</a></li>
       <li><a href="tescil.html">Tescil Sorgula</a></li>
       <li><a href="hakkinda.html">Hakkında</a></li>
@@ -32,6 +33,7 @@
   <div class="nav-mobile" id="navMobile">
     <a href="kesif.html">Keşfet</a>
     <a href="klasikler.html">Klasikler</a>
+    <a href="sairler.html">Şairler</a>
     <a href="paylasim.html">Eser Paylaş</a>
     <a href="tescil.html">Tescil Sorgula</a>
     <a href="hakkinda.html">Hakkında</a>
@@ -52,8 +54,20 @@
     <!-- ADMİN PANELİ -->
     <div id="adminPanel" style="display:none; background: rgba(212,175,55,0.05); border: 1px solid var(--gold); padding: 2rem; border-radius: var(--r); margin-bottom: 3rem;" class="reveal">
       <h3 style="color:var(--gold); margin-bottom: 1rem;">👑 Yönetici (Admin) Paneli</h3>
-      <p style="margin-bottom: 1rem;">"Klasikler" arşivine tek tıkla yüzlerce eser yüklemek için bir JSON dosyası seçin.</p>
-      <input type="file" id="bulkUploadFile" accept=".json" style="margin-bottom: 1rem; display:block; padding: 1rem; background: var(--bg-body); border: 1px solid var(--border-color); border-radius: var(--r); width: 100%; max-width: 400px; color: var(--text);">
+      <p style="margin-bottom: 1.5rem;">Sisteme toplu eser yüklemek için bir JSON dosyası seçin ve hedef koleksiyonu belirleyin.</p>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size: 0.9rem; color: var(--gold);">HEDEF KOLEKSİYON:</label>
+        <select id="bulkUploadTarget" style="padding: 1rem; border-radius: var(--r); border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-family: var(--font-sans); width: 100%; max-width: 400px;">
+          <option value="Klasikler">Klasikler (Usta Şairler)</option>
+          <option value="Eserler">Eserler (Topluluk / Tescilli Eserler)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size: 0.9rem; color: var(--gold);">JSON DOSYASI:</label>
+        <input type="file" id="bulkUploadFile" accept=".json" style="display:block; padding: 1rem; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: var(--r); width: 100%; max-width: 400px; color: var(--text-main);">
+      </div>
       <button class="btn btn-primary" id="btnBulkUpload" onclick="topluSiirYukle()">Toplu Şiir Yükle</button>
     </div>
 

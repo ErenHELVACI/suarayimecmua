@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Şair Detayı — Şuarâ-yı Mecmua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .yazar-header {
+    padding: 10rem 0 5rem;
+    text-align: center;
+    background: var(--bg-color-alt);
+    border-bottom: 1px solid var(--border-soft);
+    position: relative;
+  }
+  .yazar-avatar-big {
+    width: 120px;
+    height: 120px;
+    background: var(--gold);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-family: var(--font-serif);
+    margin: 0 auto 2rem;
+    box-shadow: var(--shadow-glow);
+  }
+  .yazar-name {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    color: var(--gold-dark);
+    margin-bottom: 1rem;
+  }
+  .yazar-bio {
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+  .yazar-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+  .y-stat {
+    text-align: center;
+  }
+  .y-stat-val {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  .y-stat-key {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-ar">شعراء</span>
+      <span class="logo-tr">Şuarâ-yı Mecmua</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="kesif.html">Keşfet</a></li>
+      <li><a href="klasikler.html">Klasikler</a></li>
+      <li><a href="sairler.html" class="active">Şairler</a></li>
+      <li><a href="paylasim.html">Eser Paylaş</a></li>
+      <li><a href="tescil.html">Tescil Sorgula</a></li>
+      <li><a href="hakkinda.html">Hakkında</a></li>
+    </ul>
+    <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+    </button>
+  </div>
+</nav>
+
+<section class="yazar-header">
+  <div class="container reveal">
+    <div class="yazar-avatar-big" id="yAvatar">?</div>
+    <h1 class="yazar-name" id="yName">Şair Yükleniyor</h1>
+    <p class="yazar-bio" id="yBio">Edebiyat dünyasının kıymetli kalemlerinden birine ait eserler arşivden getiriliyor...</p>
+    
+    <div class="yazar-stats">
+       <div class="y-stat">
+          <span class="y-stat-val" id="yCount">0</span>
+          <span class="y-stat-key">Eser Sayısı</span>
+       </div>
+       <div class="y-stat">
+          <span class="y-stat-val">Klasik</span>
+          <span class="y-stat-key">Dönem</span>
+       </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+       <p class="section-tag">Arşivdeki Eserleri</p>
+       <h2>Tüm Eserler</h2>
+    </div>
+    
+    <div class="poems-grid reveal" id="yazarGrid">
+       <!-- Yazara ait şiirler main.js tarafından buraya yüklenecek -->
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 Şuarâ-yı Mecmua. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="main.js"></script>
+<script>
+  // Sayfa yüklendiğinde yazar bilgilerini çek
+  document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const yazarIsmi = params.get('isim');
+      if(yazarIsmi) {
+          yukleYazarSayfasi(yazarIsmi);
+      }
+  });
+</script>
+</body>
+</html>

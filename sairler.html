@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usta Şairler — Şuarâ-yı Mecmua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .poet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+  .poet-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r);
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .poet-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
+  .poet-card:hover::before {
+    transform: scaleX(1);
+  }
+  .poet-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--gold);
+    box-shadow: 0 10px 20px rgba(212,175,55,0.1);
+  }
+  .poet-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--bg-body);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-family: var(--font-serif);
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 5px 15px rgba(212,175,55,0.3);
+  }
+  .poet-name {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .poet-desc {
+    font-size: 1rem;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-ar">شعراء</span>
+      <span class="logo-tr">Şuarâ-yı Mecmua</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="kesif.html">Keşfet</a></li>
+      <li><a href="klasikler.html">Klasikler</a></li>
+      <li><a href="sairler.html" class="active">Şairler</a></li>
+      <li><a href="paylasim.html">Eser Paylaş</a></li>
+      <li><a href="tescil.html">Tescil Sorgula</a></li>
+      <li><a href="hakkinda.html">Hakkında</a></li>
+    </ul>
+    <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+    </button>
+    <button class="nav-toggle" aria-label="Menü">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="kesif.html">Keşfet</a>
+    <a href="klasikler.html">Klasikler</a>
+    <a href="sairler.html" class="active">Şairler</a>
+    <a href="paylasim.html">Eser Paylaş</a>
+    <a href="tescil.html">Tescil Sorgula</a>
+    <a href="hakkinda.html">Hakkında</a>
+  </div>
+</nav>
+
+<section class="page-header">
+  <div class="container">
+    <h1 class="reveal" style="font-size: 3.5rem; color:var(--gold)">Usta Şairlerimiz</h1>
+    <p class="reveal" style="transition-delay:0.1s; max-width:600px; margin:1rem auto 0; font-size:1.1rem;">Edebiyatımızın unutulmaz kalemlerini keşfedin. Bir şairin üzerine tıklayarak onun ölümsüz eserlerinin tamamına ulaşabilirsiniz.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 2rem; padding-bottom: 5rem;">
+  <div class="container">
+    <div class="poet-grid reveal" id="poetsGrid">
+      <p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Şairler yükleniyor...</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 Şuarâ-yı Mecmua. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

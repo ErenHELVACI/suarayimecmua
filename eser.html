@@ -44,11 +44,17 @@
     letter-spacing: 2px;
   }
   .eser-reader-text {
-    font-size: 1.4rem;
-    line-height: 2.2;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 4rem;
+    font-size: 1.55rem;
+    line-height: 2.3;
+    color: var(--text-soft);
+    text-align: left;
+    display: table;
+    margin: 0 auto 4rem;
+    font-style: italic;
+    font-family: var(--font-serif);
+    letter-spacing: 0.02em;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border-soft);
   }
   .eser-reader-meta {
     border-top: 1px solid var(--border-color);
@@ -79,6 +85,7 @@
     <ul class="nav-links">
       <li><a href="kesif.html">Keşfet</a></li>
       <li><a href="klasikler.html">Klasikler</a></li>
+      <li><a href="sairler.html">Şairler</a></li>
       <li><a href="paylasim.html">Eser Paylaş</a></li>
       <li><a href="tescil.html">Tescil Sorgula</a></li>
       <li><a href="hakkinda.html">Hakkında</a></li>
@@ -93,6 +100,7 @@
   <div class="nav-mobile" id="navMobile">
     <a href="kesif.html">Keşfet</a>
     <a href="klasikler.html">Klasikler</a>
+    <a href="sairler.html">Şairler</a>
     <a href="paylasim.html">Eser Paylaş</a>
     <a href="tescil.html">Tescil Sorgula</a>
     <a href="hakkinda.html">Hakkında</a>
@@ -119,10 +127,6 @@
         <button id="btnLike" class="btn btn-outline" style="border-color:var(--red-accent); color:var(--red-accent); display:flex; align-items:center; gap:0.5rem; transition:0.3s;">
             <svg id="likeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             <span id="likeCount">0</span> Beğeni
-        </button>
-        <button id="btnListen" class="btn btn-outline" style="border-color:var(--gold); color:var(--gold); display:flex; align-items:center; gap:0.5rem; transition:0.3s;" onclick="sesliOku()">
-            <svg id="listenIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-            <span id="listenText">Şiiri Dinle</span>
         </button>
         <button id="btnDownload" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem;" onclick="indirResim()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>

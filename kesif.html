@@ -21,6 +21,8 @@
       </a>
       <ul class="nav-links">
         <li><a href="kesif.html" class="active">Keşfet</a></li>
+        <li><a href="klasikler.html">Klasikler</a></li>
+        <li><a href="sairler.html">Şairler</a></li>
         <li><a href="paylasim.html">Eser Paylaş</a></li>
         <li><a href="tescil.html">Tescil Sorgula</a></li>
         <li><a href="hakkinda.html">Hakkında</a></li>
@@ -34,6 +36,8 @@
     </div>
     <div class="nav-mobile" id="navMobile">
       <a href="kesif.html">Keşfet</a>
+      <a href="klasikler.html">Klasikler</a>
+      <a href="sairler.html">Şairler</a>
       <a href="paylasim.html">Eser Paylaş</a>
       <a href="tescil.html">Tescil Sorgula</a>
       <a href="hakkinda.html">Hakkında</a>
@@ -49,12 +53,9 @@
         <input type="text" id="searchInput" placeholder="Şiir adı, şair veya tescil kodu ara...">
         <button id="searchBtn">Ara</button>
       </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="filter-row reveal">
+      <!-- Filtreler artık burada -->
+      <div class="filter-row reveal" style="padding-top: 1.5rem; margin-bottom: 0;">
         <button class="filter-btn active">Tümü</button>
         <button class="filter-btn">Şiir</button>
         <button class="filter-btn">Gazel</button>
@@ -62,7 +63,11 @@
         <button class="filter-btn">Serbest Şiir</button>
         <button class="filter-btn">Hikâye</button>
       </div>
+    </div>
+  </section>
 
+  <section class="section" style="padding-top: 3rem;">
+    <div class="container">
       <div class="poems-grid reveal" id="poemsGrid">
         <!-- Şiirler JavaScript tarafından (main.js) buraya dinamik olarak yüklenecek -->
       </div>

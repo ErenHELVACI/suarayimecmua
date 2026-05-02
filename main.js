@@ -25,7 +25,34 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMobileMenu();
     setupTypewriter();
     renderPoems(); // Şiirleri Firebase'den yükle
-    renderKlasikler(); // Klasikleri yükle (Eğer klasikler.html ise çalışır)
+    
+    // Klasikleri URL parametresi varsa ona göre filtreleyerek yükle
+    if(window.location.pathname.includes('klasikler.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sairParam = urlParams.get('sair');
+        if(sairParam) {
+            renderKlasikler(sairParam);
+            setTimeout(() => {
+                const btns = document.querySelectorAll('#klasikFilters .filter-btn');
+                if(btns) {
+                    btns.forEach(b => {
+                        b.classList.remove('active');
+                        if(b.innerText.includes(sairParam)) b.classList.add('active');
+                    });
+                }
+            }, 100);
+        } else {
+            renderKlasikler();
+        }
+    } else {
+        renderKlasikler();
+    }
+    
+    // Şairleri yükle
+    if(window.location.pathname.includes('sairler.html')) {
+        renderSairler();
+    }
+    
     initFilters(); 
     initSearch(); // Arama çubuğunu aktifleştir
     initAuth(); // Üyelik butonlarını ayarla
@@ -33,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Eğer eser.html sayfasındaysak eseri yükle
     if(window.location.pathname.includes('eser.html')) {
         loadEserSayfasi();
+    }
+    
+    // Eğer yazar.html sayfasındaysak yazar detaylarını yükle
+    if(window.location.pathname.includes('yazar.html')) {
+        const params = new URLSearchParams(window.location.search);
+        const isim = params.get('isim');
+        if(isim) yukleYazarSayfasi(isim);
     }
 });
 
@@ -219,6 +253,7 @@ async function yukleProfil(user) {
 
 async function topluSiirYukle() {
     const fileInput = document.getElementById('bulkUploadFile');
+    const targetSelect = document.getElementById('bulkUploadTarget');
     const btn = document.getElementById('btnBulkUpload');
     
     if(!fileInput.files.length) {
@@ -226,6 +261,7 @@ async function topluSiirYukle() {
         return;
     }
     
+    const targetCol = targetSelect ? targetSelect.value : "Klasikler";
     const file = fileInput.files[0];
     const reader = new FileReader();
     
@@ -234,24 +270,71 @@ async function topluSiirYukle() {
             const siirler = JSON.parse(e.target.result);
             if(!Array.isArray(siirler)) throw new Error("Dizi formatında değil");
             
-            btn.innerHTML = 'Yükleniyor...';
+            btn.innerHTML = 'Kontrol Ediliyor...';
             btn.disabled = true;
-            
-            const batch = db.batch();
-            siirler.forEach((eser) => {
-                const randid = Math.floor(100000 + Math.random() * 900000);
-                const docRef = db.collection("Klasikler").doc("KLASIK-BULK-" + randid);
-                batch.set(docRef, eser);
+
+            // 1. Mevcut koleksiyonu çek (kopya kontrolü için)
+            const snapshot = await db.collection(targetCol).get();
+            const existingTexts = new Set();
+            snapshot.forEach(doc => {
+                const text = doc.data().metin || "";
+                const clean = text.replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
+                if(clean) existingTexts.add(clean);
             });
+
+            const batch = db.batch();
+            let addedCount = 0;
+            let skippedCount = 0;
+            const currentUser = auth.currentUser;
+
+            // 2. Yeni şiirleri filtrele ve batch'e ekle
+            siirler.forEach((eser) => {
+                const cleanNew = (eser.metin || "").replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
+                
+                if (existingTexts.has(cleanNew)) {
+                    skippedCount++;
+                } else {
+                    const randid = Math.floor(100000 + Math.random() * 900000);
+                    let docId, finalEser;
+
+                    if(targetCol === "Klasikler") {
+                        docId = "KLASIK-BULK-" + randid;
+                        finalEser = { ...eser };
+                    } else {
+                        // Eserler (Topluluk) için tescil kodu üret
+                        const regId = "TM-2025-" + Math.floor(10000 + Math.random() * 90000);
+                        docId = regId;
+                        finalEser = {
+                            ...eser,
+                            id: regId,
+                            sahipUid: currentUser ? currentUser.uid : "ADMIN_UPLOAD",
+                            tarih: firebase.firestore.FieldValue.serverTimestamp(),
+                            tur: eser.tur || "Şiir",
+                            likes: []
+                        };
+                    }
+
+                    const docRef = db.collection(targetCol).doc(docId);
+                    batch.set(docRef, finalEser);
+                    existingTexts.add(cleanNew); 
+                    addedCount++;
+                }
+            });
+
+            if(addedCount > 0) {
+                await batch.commit();
+                showToast('Başarılı', `${addedCount} eser ${targetCol} koleksiyonuna eklendi. (${skippedCount} mükerrer atlandı)`, 'success');
+            } else {
+                showToast('Bilgi', 'Eklenecek yeni eser bulunamadı (Hepsi mükerrer).', 'info');
+            }
             
-            await batch.commit();
-            showToast('Başarılı', `${siirler.length} adet şiir veritabanına eklendi!`, 'success');
             btn.innerHTML = 'Toplu Şiir Yükle';
             btn.disabled = false;
             fileInput.value = '';
+            
         } catch(err) {
             console.error(err);
-            showToast('Hata', 'Dosya okunurken hata oluştu. Lütfen doğru formatta JSON yükleyin.', 'error');
+            showToast('Hata', 'Dosya işlenirken hata oluştu: ' + err.message, 'error');
             btn.innerHTML = 'Toplu Şiir Yükle';
             btn.disabled = false;
         }
@@ -410,7 +493,8 @@ function initFilters() {
             if(sInput) sInput.value = '';
             
             if(container.id === 'klasikFilters') {
-                renderKlasikler(e.target.innerText);
+                const filterText = e.target.innerText.trim();
+                renderKlasikler(filterText);
             } else {
                 renderPoems(e.target.innerText);
             }
@@ -773,21 +857,6 @@ function setupTypewriter() {
 }
 
 // --- USTA ŞAİRLER (KLASİKLER) VERİTABANI ---
-const klasikSiirler = [
-    { yazar: "Nazım Hikmet", baslik: "Mavi Gözlü Dev", metin: "O mavi gözlü bir devdi.<br>Minnacık bir kadın sevdi.<br>Kadının hayali minnacık bir evdi..." },
-    { yazar: "Nazım Hikmet", baslik: "Tahir ile Zühre", metin: "Tahir olmak da ayıp değil Zühre olmak da<br>hattâ sevda yüzünden ölmek de ayıp değil..." },
-    { yazar: "Orhan Veli", baslik: "Anlatamıyorum", metin: "Ağlasam sesimi duyar mısınız,<br>Mısralarımda;<br>Dokunabilir misiniz,<br>Gözyaşlarıma, ellerinizle?" },
-    { yazar: "Orhan Veli", baslik: "İstanbul'u Dinliyorum", metin: "İstanbul'u dinliyorum, gözlerim kapalı<br>Önce hafiften bir rüzgar esiyor..." },
-    { yazar: "Cemal Süreya", baslik: "Üvercinka", metin: "Böylece bir kere daha boynunlayız sayılı yerlerinden<br>En uzun boynun bu senin dayanmaya ya da umudu kesmemeye..." },
-    { yazar: "Cemal Süreya", baslik: "Biliyorum Sana Giden...", metin: "Biliyorum sana giden yollar kapalı<br>Üstelik sen de hiç bir zaman sevmedin beni..." },
-    { yazar: "Necip Fazıl", baslik: "Kaldırımlar", metin: "Sokaktayım, kimsesiz bir sokak ortasında;<br>Yürüyorum, arkama bakmadan yürüyorum." },
-    { yazar: "Necip Fazıl", baslik: "Beklenen", metin: "Ne hasta bekler sabahı,<br>Ne taze ölüyü mezar.<br>Ne de şeytan, bir günahı,<br>Seni beklediğim kadar." },
-    { yazar: "Attilâ İlhan", baslik: "Ben Sana Mecburum", metin: "Ben sana mecburum bilemezsin<br>Adını mıh gibi aklımda tutuyorum..." },
-    { yazar: "Attilâ İlhan", baslik: "Üçüncü Şahsın Şiiri", metin: "Gözlerin gözlerime değince<br>Felâketim olurdu ağlardım..." },
-    { yazar: "Özdemir Asaf", baslik: "Lavinia", metin: "Sana gitme demeyeceğim.<br>Üşüyorsun ceketimi al.<br>Günün en güzel saatleri bunlar.<br>Yanımda kal." },
-    { yazar: "Turgut Uyar", baslik: "Göğe Bakma Durağı", metin: "İkimiz birden sevinebiliriz göğe bakalım<br>Şu kaçamak ışıklardan şu şeker kamışlarından..." },
-    { yazar: "Cahit Sıtkı Tarancı", baslik: "Otuz Beş Yaş", metin: "Yaş otuz beş! Yolun yarısı eder.<br>Dante gibi ortasındayız ömrün." }
-];
 
 async function renderKlasikler(filtre = "Tümü") {
     const grid = document.getElementById('klasiklerGrid');
@@ -796,19 +865,6 @@ async function renderKlasikler(filtre = "Tümü") {
     
     try {
         const snapshot = await db.collection("Klasikler").get();
-        
-        // Eğer Firebase'de Klasikler koleksiyonu henüz oluşmadıysa otomatik aktarım yapalım
-        if(snapshot.empty && klasikSiirler.length > 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--gold); font-size:1.1rem; padding: 3rem 0;">Klasikler veritabanına kuruluyor, lütfen bekleyin...</p>';
-            const batch = db.batch();
-            klasikSiirler.forEach((eser, i) => {
-                const docRef = db.collection("Klasikler").doc("KLASIK-" + (i + 1));
-                batch.set(docRef, eser);
-            });
-            await batch.commit();
-            klasikSiirler.length = 0; // Bir daha girmemesi için boşalt
-            return renderKlasikler(filtre); // Veritabanından tekrar çek
-        }
 
         grid.innerHTML = '';
         const eserler = [];
@@ -820,12 +876,11 @@ async function renderKlasikler(filtre = "Tümü") {
         
         let filtrelenmis = eserler;
         if(filtre !== "Tümü") {
-            if(filtre === "Diğerleri") {
-                const ustalar = ["Nazım Hikmet", "Orhan Veli", "Cemal Süreya", "Necip Fazıl", "Attilâ İlhan"];
-                filtrelenmis = eserler.filter(s => !ustalar.includes(s.yazar));
-            } else {
-                filtrelenmis = eserler.filter(s => s.yazar === filtre);
-            }
+            const searchVal = filtre.toLowerCase().trim();
+            filtrelenmis = eserler.filter(s => {
+                if(!s.yazar) return false;
+                return s.yazar.toLowerCase().includes(searchVal) || searchVal.includes(s.yazar.toLowerCase());
+            });
         }
         
         if(filtrelenmis.length === 0) {
@@ -930,6 +985,10 @@ async function loadEserSayfasi() {
                     return;
                 }
                 
+                if(btnLike.getAttribute('data-processing') === 'true') return;
+                btnLike.setAttribute('data-processing', 'true');
+                btnLike.style.opacity = '0.7';
+                
                 try {
                     const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
                     const ref = db.collection(colName).doc(id);
@@ -938,16 +997,21 @@ async function loadEserSayfasi() {
                     if(likes.includes(user.uid)) {
                         await ref.set({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) }, { merge: true });
                         likeIcon.setAttribute('fill', 'none');
-                        likes.splice(likes.indexOf(user.uid), 1); // Yerel listeyi güncelle
+                        // Tekrar kontrol: başkası tıklamış olabilir, yerel listeyi güvenli güncelle
+                        const idx = likes.indexOf(user.uid);
+                        if(idx > -1) likes.splice(idx, 1);
                     } else {
                         await ref.set({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) }, { merge: true });
                         likeIcon.setAttribute('fill', 'var(--red-accent)');
-                        likes.push(user.uid); // Yerel listeyi güncelle
+                        if(!likes.includes(user.uid)) likes.push(user.uid);
                     }
                     likeCountEl.innerText = likes.length;
                 } catch(err) {
                     console.error("Beğeni eklenirken hata:", err);
-                    showToast('Hata', 'Veritabanı erişim engeli (Firebase Rules hatası).', 'error');
+                    showToast('Hata', 'İşlem başarısız oldu.', 'error');
+                } finally {
+                    btnLike.setAttribute('data-processing', 'false');
+                    btnLike.style.opacity = '1';
                 }
             };
         });
@@ -1079,42 +1143,63 @@ function indirResim() {
     });
 }
 
-// --- ŞİİR SESLENDİRME (Text-to-Speech) ---
-function sesliOku() {
-    const textHtml = document.getElementById('eText').innerHTML;
-    const plainText = textHtml.replace(/<br\s*[\/]?>/gi, " ").replace(/<[^>]+>/g, '');
+
+// --- ŞAİRLER (YAZARLAR) LİSTESİNİ OLUŞTUR ---
+async function renderSairler() {
+    const grid = document.getElementById('poetsGrid');
+    if(!grid) return;
     
-    if ('speechSynthesis' in window) {
-        const synth = window.speechSynthesis;
-        const btnText = document.getElementById('listenText');
-        const icon = document.getElementById('listenIcon');
-        
-        if(synth.speaking) {
-            synth.cancel();
-            btnText.innerText = "Şiiri Dinle";
-            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+    try {
+        const snapshot = await db.collection("Klasikler").get();
+        if(snapshot.empty) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">Henüz şair bulunmuyor.</p>';
             return;
         }
-
-        const utterThis = new SpeechSynthesisUtterance(plainText);
-        utterThis.lang = 'tr-TR';
-        utterThis.rate = 0.85;
-        utterThis.pitch = 0.9; 
-
-        utterThis.onstart = () => {
-            btnText.innerText = "Dinlemeyi Durdur";
-            icon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
-            showToast('Seslendirme', 'Şiir okunuyor...', 'success');
-        };
         
-        utterThis.onend = () => {
-            btnText.innerText = "Şiiri Dinle";
-            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
-        };
-
-        synth.speak(utterThis);
-    } else {
-        showToast('Desteklenmiyor', 'Tarayıcınız sesli okumayı desteklemiyor.', 'error');
+        const yazarlarSet = new Set();
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(data.yazar) yazarlarSet.add(data.yazar);
+        });
+        
+        const yazarlar = Array.from(yazarlarSet).sort();
+        
+        grid.innerHTML = '';
+        
+        yazarlar.forEach((yazar, i) => {
+            const gecikme = i * 0.1;
+            const basHarfler = yazar.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            
+            const card = document.createElement('div');
+            card.className = 'poet-card';
+            card.style.animation = `fadeUp 0.6s ease ${gecikme}s forwards`;
+            card.style.opacity = '0';
+            card.onclick = () => { location.href = 'yazar.html?isim=' + encodeURIComponent(yazar); };
+            
+            card.innerHTML = `
+                <div class="poet-avatar">${basHarfler}</div>
+                <h3 class="poet-name">${yazar}</h3>
+                <p class="poet-desc">Klasik Şair</p>
+            `;
+            grid.appendChild(card);
+        });
+        
+        // Tüm Şiirler kartı
+        const allCard = document.createElement('div');
+        allCard.className = 'poet-card';
+        allCard.style.animation = `fadeUp 0.6s ease ${yazarlar.length * 0.1}s forwards`;
+        allCard.style.opacity = '0';
+        allCard.onclick = () => { location.href = 'klasikler.html'; };
+        allCard.innerHTML = `
+            <div class="poet-avatar" style="background:var(--red-accent)">+</div>
+            <h3 class="poet-name">Tüm Eserler</h3>
+            <p class="poet-desc">Klasiklerin Tamamını Keşfet</p>
+        `;
+        grid.appendChild(allCard);
+        
+    } catch(err) {
+        console.error("Şairler yüklenirken hata:", err);
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--red-accent);">Şairler yüklenirken hata oluştu.</p>';
     }
 }
 
@@ -1193,5 +1278,64 @@ async function gonderYorum() {
     } finally {
         btn.disabled = false;
         btn.innerText = "Yorumu Gönder";
+    }
+}
+
+// --- YAZAR DETAY SAYFASI (yazar.html) ---
+async function yukleYazarSayfasi(isim) {
+    const yName = document.getElementById('yName');
+    const yAvatar = document.getElementById('yAvatar');
+    const yCount = document.getElementById('yCount');
+    const yGrid = document.getElementById('yazarGrid');
+    
+    if(!yName || !yGrid) return;
+    
+    yName.innerText = isim;
+    yAvatar.innerText = isim.charAt(0).toUpperCase();
+    
+    try {
+        const snapshot = await db.collection("Klasikler").where("yazar", "==", isim).get();
+        yGrid.innerHTML = '';
+        
+        if(snapshot.empty) {
+            yGrid.innerHTML = '<p style="grid-column:1/-1; color:var(--text-muted);">Bu şaire ait henüz bir eser bulunamadı.</p>';
+            yCount.innerText = "0";
+            return;
+        }
+        
+        yCount.innerText = snapshot.size;
+        
+        snapshot.forEach((doc, index) => {
+            const eser = doc.data();
+            const id = doc.id;
+            const gecikme = index * 0.1;
+
+            let kisaMetin = eser.metin;
+            const misralar = eser.metin.split('<br>');
+            if(misralar.length > 4) {
+                kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'poem-card reveal active';
+            card.style.transitionDelay = gecikme + 's';
+            card.onclick = () => { window.location.href = 'eser.html?id=' + id; };
+            
+            card.innerHTML = `
+                <div class="klasik-badge">Klasik Eser</div>
+                <h3 class="poem-card-title" style="margin-top:1rem;">${eser.baslik}</h3>
+                <div class="poem-excerpt"><p>${kisaMetin}</p></div>
+                <div class="poem-card-footer">
+                  <div class="poem-card-author">
+                    <div class="author-avatar">${eser.yazar.charAt(0)}</div>
+                    <span style="font-weight:600; color:var(--gold)">${eser.yazar}</span>
+                  </div>
+                </div>
+            `;
+            yGrid.appendChild(card);
+        });
+    } catch(err) {
+        console.error("Yazar sayfası hatası:", err);
+        yGrid.innerHTML = '<p style="color:var(--red-accent);">Bilgiler yüklenirken hata oluştu.</p>';
     }
 }
