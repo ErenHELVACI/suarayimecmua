@@ -260,6 +260,52 @@ async function yukleProfil(user) {
             likedEser.forEach(doc => renderPoemCard(likedGrid, doc.id, doc.data()));
         }
 
+        // 3. Eserlerime Gelen Yorumlar
+        const commentsDiv = document.getElementById('myRecentComments');
+        if(commentsDiv) {
+            commentsDiv.innerHTML = '';
+            let commentFound = false;
+
+            // Kendi eserlerimizin yorumlarını topla
+            const commentPromises = mySnapshot.docs.map(async (doc) => {
+                const eser = doc.data();
+                const eserId = doc.id;
+                const cSnapshot = await db.collection("Eserler").doc(eserId).collection("Yorumlar").orderBy("tarih", "desc").limit(3).get();
+                
+                cSnapshot.forEach(cDoc => {
+                    commentFound = true;
+                    const cData = cDoc.data();
+                    const cDiv = document.createElement('div');
+                    cDiv.className = 'reveal active';
+                    cDiv.style.background = 'var(--bg-color-alt)';
+                    cDiv.style.padding = '1.2rem';
+                    cDiv.style.borderRadius = 'var(--r)';
+                    cDiv.style.borderLeft = '4px solid var(--gold)';
+                    cDiv.style.marginBottom = '10px';
+                    cDiv.style.cursor = 'pointer';
+                    cDiv.onclick = () => { window.location.href = 'eser.html?id=' + eserId; };
+                    
+                    const tarihStr = cData.tarih && cData.tarih.toDate ? cData.tarih.toDate().toLocaleDateString('tr-TR') : '';
+
+                    cDiv.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem; align-items:center;">
+                            <strong style="color:var(--gold-dark);">${cData.yazar}</strong>
+                            <span style="color:var(--text-muted); font-size:0.75rem;">${tarihStr}</span>
+                        </div>
+                        <p style="font-size:0.95rem; color:var(--text-soft); line-height:1.5; margin-bottom:0.5rem;">${cData.metin}</p>
+                        <div style="text-align:right; font-size:0.75rem; color:var(--gold); font-style:italic;">"${eser.baslik}" eserine yapıldı</div>
+                    `;
+                    commentsDiv.appendChild(cDiv);
+                });
+            });
+
+            await Promise.all(commentPromises);
+
+            if(!commentFound) {
+                commentsDiv.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Henüz eserlerinize yorum yapılmamış.</p>';
+            }
+        }
+
     } catch(err) {
         console.error("Profil yükleme hatası:", err);
         pName.innerText = "Hata oluştu.";
