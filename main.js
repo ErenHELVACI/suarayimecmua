@@ -194,8 +194,14 @@ async function yukleProfil(user) {
     const pEmail = document.getElementById('profilEmail');
     const pRole = document.getElementById('profilRole');
     const adminPanel = document.getElementById('adminPanel');
-    const grid = document.getElementById('myPoemsGrid');
+    const myGrid = document.getElementById('myPoemsGrid');
+    const likedGrid = document.getElementById('likedPoemsGrid');
     
+    // İstatistik elementleri
+    const totalViewsEl = document.getElementById('totalViews');
+    const totalLikesEl = document.getElementById('totalLikes');
+    const poemCountEl = document.getElementById('poemCount');
+
     if(!pName) return; 
     
     try {
@@ -215,40 +221,75 @@ async function yukleProfil(user) {
             pEmail.innerText = user.email;
         }
         
-        // Kullanıcının eserlerini çek
-        const snapshot = await db.collection("Eserler").where("sahipUid", "==", user.uid).get();
-        grid.innerHTML = '';
-        if(snapshot.empty) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; color:var(--text-muted);">Henüz bir eser tescillemediniz.</p>';
+        // 1. Kendi Eserlerim ve İstatistik Hesaplama
+        const mySnapshot = await db.collection("Eserler").where("sahipUid", "==", user.uid).get();
+        myGrid.innerHTML = '';
+        
+        let totalViews = 0;
+        let totalLikes = 0;
+        
+        if(mySnapshot.empty) {
+            myGrid.innerHTML = '<p style="grid-column: 1/-1; color:var(--text-muted);">Henüz bir eser tescillemediniz.</p>';
         } else {
-            snapshot.forEach(doc => {
+            mySnapshot.forEach(doc => {
                 const eser = doc.data();
-                let kisaMetin = eser.metin;
-                const misralar = eser.metin.split('<br>');
-                if(misralar.length > 4) {
-                    kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
-                }
-
-                const card = document.createElement('div');
-                card.className = 'poem-card reveal active';
-                card.style.cursor = 'pointer';
-                card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
-                card.innerHTML = `
-                    <div class="poem-card-tag">${eser.tur}</div>
-                    <h3 class="poem-card-title">${eser.baslik}</h3>
-                    <div class="poem-excerpt"><p>${kisaMetin}</p></div>
-                    <div class="poem-card-footer">
-                      <div class="poem-card-author"><span style="font-size:0.8rem">${eser.id}</span></div>
-                      <span class="poem-card-code" style="color:var(--green-ok); font-size:0.8rem">✓ Tescilli</span>
-                    </div>
-                `;
-                grid.appendChild(card);
+                const eserLikes = (eser.likes || []).length;
+                totalViews += (eser.goruntulenme || 0);
+                totalLikes += eserLikes;
+                renderPoemCard(myGrid, doc.id, eser);
             });
         }
+        
+        // İstatistikleri yazdır
+        if(totalViewsEl) totalViewsEl.innerText = totalViews;
+        if(totalLikesEl) totalLikesEl.innerText = totalLikes;
+        if(poemCountEl) poemCountEl.innerText = mySnapshot.size;
+
+        // 2. Beğenilen Eserler (Klasikler ve Eserler)
+        likedGrid.innerHTML = '';
+        
+        // Klasiklerden beğendikleri
+        const likedKlasik = await db.collection("Klasikler").where("likes", "array-contains", user.uid).get();
+        // Topluluktan beğendikleri
+        const likedEser = await db.collection("Eserler").where("likes", "array-contains", user.uid).get();
+        
+        if(likedKlasik.empty && likedEser.empty) {
+            likedGrid.innerHTML = '<p style="grid-column: 1/-1; color:var(--text-muted);">Henüz bir eseri beğenmediniz.</p>';
+        } else {
+            likedKlasik.forEach(doc => renderPoemCard(likedGrid, doc.id, doc.data(), true));
+            likedEser.forEach(doc => renderPoemCard(likedGrid, doc.id, doc.data()));
+        }
+
     } catch(err) {
-        console.error(err);
-        pName.innerText = "Bilgiler alınamadı.";
+        console.error("Profil yükleme hatası:", err);
+        pName.innerText = "Hata oluştu.";
     }
+}
+
+// Yardımcı fonksiyon: Profil kartlarını oluşturur
+function renderPoemCard(container, id, eser, isKlasik = false) {
+    let kisaMetin = eser.metin;
+    const misralar = eser.metin.split('<br>');
+    if(misralar.length > 3) {
+        kisaMetin = misralar.slice(0, 3).join('<br>') + '...';
+    }
+
+    const card = document.createElement('div');
+    card.className = 'poem-card reveal active';
+    card.style.cursor = 'pointer';
+    card.onclick = () => { window.location.href = 'eser.html?id=' + id; };
+    
+    card.innerHTML = `
+        <div class="poem-card-tag" style="${isKlasik ? 'background:rgba(212,175,55,0.15); color:var(--gold);' : ''}">${isKlasik ? 'Klasik Eser' : (eser.tur || 'Eser')} ${isKlasik ? '' : ('— ' + id)}</div>
+        <h3 class="poem-card-title" style="font-size:1.1rem; margin-bottom:0.5rem; margin-top:0.5rem;">${eser.baslik}</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.4;">${kisaMetin}</p>
+        <div class="poem-card-footer" style="margin-top:auto; padding-top:0.8rem; border-top:1px solid var(--border-soft); font-size:0.75rem; display:flex; gap:15px; color:var(--text-muted);">
+            <span style="display:flex; align-items:center; gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ${eser.goruntulenme || 0}</span>
+            <span style="display:flex; align-items:center; gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--red-accent)" stroke="var(--red-accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${(eser.likes || []).length}</span>
+            <span style="margin-left:auto; font-style:italic;">${eser.yazar || 'Bilinmiyor'}</span>
+        </div>
+    `;
+    container.appendChild(card);
 }
 
 async function topluSiirYukle() {

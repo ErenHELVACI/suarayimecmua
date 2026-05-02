@@ -51,6 +51,22 @@
       <button onclick="cikisYap(event)" class="btn btn-outline" style="border-color:var(--red-accent); color:var(--red-accent); padding: 0.5rem 1.5rem; height: max-content;">Çıkış Yap</button>
     </div>
 
+    <!-- ETKİLEŞİM İSTATİSTİKLERİ -->
+    <div class="stats-row reveal" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+      <div style="background:var(--bg-color-alt); padding: 1.5rem; border-radius: var(--r); border: 1px solid var(--border-soft); text-align:center;">
+        <p style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Toplam Okunma</p>
+        <h3 id="totalViews" style="font-size:2rem; color:var(--gold);">0</h3>
+      </div>
+      <div style="background:var(--bg-color-alt); padding: 1.5rem; border-radius: var(--r); border: 1px solid var(--border-soft); text-align:center;">
+        <p style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Aldığım Beğeni</p>
+        <h3 id="totalLikes" style="font-size:2rem; color:var(--red-accent);">0</h3>
+      </div>
+      <div style="background:var(--bg-color-alt); padding: 1.5rem; border-radius: var(--r); border: 1px solid var(--border-soft); text-align:center;">
+        <p style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Tescilli Eserlerim</p>
+        <h3 id="poemCount" style="font-size:2rem; color:var(--text-main);">0</h3>
+      </div>
+    </div>
+
     <!-- ADMİN PANELİ -->
     <div id="adminPanel" style="display:none; background: rgba(212,175,55,0.05); border: 1px solid var(--gold); padding: 2rem; border-radius: var(--r); margin-bottom: 3rem;" class="reveal">
       <h3 style="color:var(--gold); margin-bottom: 1rem;">👑 Yönetici (Admin) Paneli</h3>
@@ -73,8 +89,14 @@
 
     <!-- TESCİLLİ ESERLERİM -->
     <h3 style="margin-bottom: 1.5rem;" class="reveal">Tescillediğim Eserler</h3>
-    <div class="poems-grid reveal" id="myPoemsGrid">
+    <div class="poems-grid reveal" id="myPoemsGrid" style="margin-bottom: 4rem;">
       <p style="grid-column: 1/-1; color:var(--text-muted);">Eserleriniz yükleniyor...</p>
+    </div>
+
+    <!-- BEĞENİLENLER -->
+    <h3 style="margin-bottom: 1.5rem;" class="reveal">Beğendiğim Eserler</h3>
+    <div class="poems-grid reveal" id="likedPoemsGrid">
+      <p style="grid-column: 1/-1; color:var(--text-muted);">Yükleniyor...</p>
     </div>
   </div>
 </section>
