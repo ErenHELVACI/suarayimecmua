@@ -140,11 +140,49 @@
             <svg id="likeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             <span id="likeCount">0</span> Beğeni
         </button>
+        <button id="btnAI" class="btn btn-outline" style="border-color:var(--gold); color:var(--gold); display:flex; align-items:center; gap:0.5rem; transition:0.3s;" onclick="activeAI()">
+            <span>✨</span> Yapay Zeka Analizi
+        </button>
         <button id="btnDownload" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem;" onclick="indirResim()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Resim Olarak İndir
         </button>
      </div>
+
+      <!-- YAPAY ZEKA PANELİ -->
+      <div id="aiPanel" style="display:none; margin-top: 4rem; padding: 3rem; background: linear-gradient(135deg, rgba(176,142,90,0.08), rgba(139,46,46,0.04)); border: 1px solid var(--gold-glow); border-radius: var(--r-lg); position: relative; overflow: hidden; text-align: left;" class="reveal">
+          <div style="position:relative; z-index:1;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.5rem;">
+                  <span style="font-size:1.5rem;">✨</span>
+                  <h3 style="font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-dark); margin:0;">AI Edebi Danışman</h3>
+              </div>
+              
+              <div style="display:grid; grid-template-columns: 1.8fr 1fr; gap:2rem;" id="aiGrid">
+                  <div>
+                      <p id="aiAnalysisText" style="font-size:1.1rem; line-height:1.8; color:var(--text-soft); font-style:italic; margin-bottom:1.5rem;">
+                          Şiirin metaforları ve derin anlamları analiz ediliyor...
+                      </p>
+                      <div id="aiMoodBadge" style="display:inline-block; padding:0.4rem 1.2rem; background:var(--gold-dark); color:white; border-radius:999px; font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:1rem;">Duygu: Tespit Ediliyor</div>
+                  </div>
+                  <div id="aiVisualBox">
+                      <div style="width:100%; aspect-ratio:1; border-radius:var(--r); background:var(--bg-color-deep); display:flex; align-items:center; justify-content:center; border:1px solid var(--border-soft); overflow:hidden; box-shadow:var(--shadow);">
+                          <img id="aiGeneratedImg" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                          <div id="aiLoader" style="font-size:2rem;">🎨</div>
+                      </div>
+                      <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.8rem; text-align:center;">Şiirin ruhunu yansıtan AI Görseli</p>
+                  </div>
+              </div>
+
+              <!-- MISRA MISRA ANALİZ -->
+              <div style="margin-top:2.5rem; padding-top:2rem; border-top:1px solid var(--border-soft);">
+                  <h4 style="font-family:var(--font-serif); font-size:1.4rem; color:var(--gold); margin-bottom:1.5rem;">📜 Günümüz Türkçesi ile Karşılığı</h4>
+                  <div id="aiVerseAnalysis" style="display:flex; flex-direction:column; gap:1.2rem;">
+                      <p style="color:var(--text-muted); font-style:italic;">Yapay zeka mısraları inceliyor...</p>
+                  </div>
+              </div>
+
+          </div>
+      </div>
 
      <!-- SADECE ADMİNLERİN GÖREBİLECEĞİ ALAN -->
      <div id="adminActionContainer" style="display:none; margin-top: 3rem; padding-top: 2rem; border-top: 1px dashed var(--red-accent);">
