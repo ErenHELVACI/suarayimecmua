@@ -1576,24 +1576,31 @@ async function yukleYazarSayfasi(isim) {
     yAvatar.innerText = isim.charAt(0).toUpperCase();
 
     try {
-        const snapshot = await db.collection("Klasikler").where("yazar", "==", isim).get();
+        // Hem Klasikler hem de Eserler koleksiyonunda ara
+        const [snapKlasik, snapEserler] = await Promise.all([
+            db.collection("Klasikler").where("yazar", "==", isim).get(),
+            db.collection("Eserler").where("yazar", "==", isim).get()
+        ]);
+
+        const allDocs = [...snapKlasik.docs, ...snapEserler.docs];
         yGrid.innerHTML = '';
 
-        if (snapshot.empty) {
-            yGrid.innerHTML = '<p style="grid-column:1/-1; color:var(--text-muted);">Bu şaire ait henüz bir eser bulunamadı.</p>';
+        if (allDocs.length === 0) {
+            yGrid.innerHTML = '<p style="grid-column:1/-1; color:var(--text-muted);">Bu isme ait henüz bir eser bulunamadı.</p>';
             yCount.innerText = "0";
             return;
         }
 
-        yCount.innerText = snapshot.size;
+        yCount.innerText = allDocs.length;
 
-        snapshot.forEach((doc, index) => {
+        allDocs.forEach((doc, index) => {
             const eser = doc.data();
             const id = doc.id;
+            const isKlasik = id.startsWith("KLASIK") || id.startsWith("TM-2024");
             const gecikme = index * 0.1;
 
-            let kisaMetin = eser.metin;
-            const misralar = eser.metin.split('<br>');
+            let kisaMetin = eser.metin || "";
+            const misralar = kisaMetin.split('<br>');
             if (misralar.length > 4) {
                 kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
             }
@@ -1604,12 +1611,12 @@ async function yukleYazarSayfasi(isim) {
             card.onclick = () => { window.location.href = 'eser.html?id=' + id; };
 
             card.innerHTML = `
-                <div class="klasik-badge">Klasik Eser</div>
+                <div class="poem-card-tag" style="${isKlasik ? 'background:rgba(212,175,55,0.15); color:var(--gold);' : ''}">${isKlasik ? 'Klasik Eser' : (eser.tur || 'Eser')}</div>
                 <h3 class="poem-card-title" style="margin-top:1rem;">${eser.baslik}</h3>
                 <div class="poem-excerpt"><p>${kisaMetin}</p></div>
                 <div class="poem-card-footer">
                   <div class="poem-card-author">
-                    <div class="author-avatar">${eser.yazar.charAt(0)}</div>
+                    <div class="author-avatar">${eser.yazar ? eser.yazar.charAt(0) : '?'}</div>
                     <span style="font-weight:600; color:var(--gold)">${eser.yazar}</span>
                   </div>
                 </div>
@@ -1635,13 +1642,26 @@ async function yukleLiderlik() {
         let rank = 1;
         snapshot.forEach(doc => {
             const data = doc.data();
+            const yazarIsmi = data.yazar || 'Anonim';
             const row = document.createElement('div');
-            row.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding: 1rem 1.5rem; background: var(--bg-card); border-radius: var(--r); border: 1px solid var(--border-soft); transition: 0.3s;`;
+            row.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding: 1rem 1.5rem; background: var(--bg-card); border-radius: var(--r); border: 1px solid var(--border-soft); transition: 0.3s; cursor: pointer;`;
+            
+            // Satıra tıklandığında yazara git
+            row.onclick = () => {
+                if(yazarIsmi !== 'Anonim') {
+                    window.location.href = `yazar.html?isim=${encodeURIComponent(yazarIsmi)}`;
+                }
+            };
+            
+            // Hover efekti ekle
+            row.onmouseenter = () => { row.style.borderColor = "var(--gold)"; row.style.transform = "translateX(5px)"; };
+            row.onmouseleave = () => { row.style.borderColor = "var(--border-soft)"; row.style.transform = "translateX(0)"; };
+
             row.innerHTML = `
                 <div style="display:flex; align-items:center; gap: 1.2rem;">
                     <span style="font-weight:700; color:var(--gold); width:20px;">${rank}</span>
-                    <div class="author-avatar" style="width:38px; height:38px; font-size:0.85rem; border:1px solid var(--gold-glow);">${data.yazar ? data.yazar.charAt(0) : '?'}</div>
-                    <span style="font-weight:500; font-family:var(--font-serif); font-size:1.1rem;">${data.yazar || 'Anonim'}</span>
+                    <div class="author-avatar" style="width:38px; height:38px; font-size:0.85rem; border:1px solid var(--gold-glow);">${yazarIsmi.charAt(0)}</div>
+                    <span style="font-weight:500; font-family:var(--font-serif); font-size:1.1rem;">${yazarIsmi}</span>
                 </div>
                 <div style="text-align:right;">
                     <span style="display:block; color:var(--gold-dark); font-weight:600; font-size:0.95rem;">${data.goruntulenme || 0}</span>
