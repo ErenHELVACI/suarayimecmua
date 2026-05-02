@@ -5,13 +5,13 @@
 
 // Firebase Ayarları
 const firebaseConfig = {
-  apiKey: "AIzaSyC45yc5_pgD7Pb9FNFLhKHjlpt4T19rQfc",
-  authDomain: "suarayimecmua.firebaseapp.com",
-  projectId: "suarayimecmua",
-  storageBucket: "suarayimecmua.firebasestorage.app",
-  messagingSenderId: "984768059887",
-  appId: "1:984768059887:web:9456dea4067a70c234fe1a",
-  measurementId: "G-Q2XYNT65HQ"
+    apiKey: "AIzaSyC45yc5_pgD7Pb9FNFLhKHjlpt4T19rQfc",
+    authDomain: "suarayimecmua.firebaseapp.com",
+    projectId: "suarayimecmua",
+    storageBucket: "suarayimecmua.firebasestorage.app",
+    messagingSenderId: "984768059887",
+    appId: "1:984768059887:web:9456dea4067a70c234fe1a",
+    measurementId: "G-Q2XYNT65HQ"
 };
 // Firebase'i başlat
 firebase.initializeApp(firebaseConfig);
@@ -24,20 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavbarState();
     setupMobileMenu();
     setupTypewriter();
-    renderPoems(); // Şiirleri Firebase'den yükle
-    
+    renderPoems();
+    yukleLiderlik();
+    yukleGununSiiri(); // Günün şiirini dinamik yükle
+
     // Klasikleri URL parametresi varsa ona göre filtreleyerek yükle
-    if(window.location.pathname.includes('klasikler.html')) {
+    if (window.location.pathname.includes('klasikler.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const sairParam = urlParams.get('sair');
-        if(sairParam) {
+        if (sairParam) {
             renderKlasikler(sairParam);
             setTimeout(() => {
                 const btns = document.querySelectorAll('#klasikFilters .filter-btn');
-                if(btns) {
+                if (btns) {
                     btns.forEach(b => {
                         b.classList.remove('active');
-                        if(b.innerText.includes(sairParam)) b.classList.add('active');
+                        if (b.innerText.includes(sairParam)) b.classList.add('active');
                     });
                 }
             }, 100);
@@ -47,26 +49,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         renderKlasikler();
     }
-    
+
     // Şairleri yükle
-    if(window.location.pathname.includes('sairler.html')) {
+    if (window.location.pathname.includes('sairler.html')) {
         renderSairler();
     }
-    
-    initFilters(); 
+
+    initFilters();
     initSearch(); // Arama çubuğunu aktifleştir
     initAuth(); // Üyelik butonlarını ayarla
-    
+
     // Eğer eser.html sayfasındaysak eseri yükle
-    if(window.location.pathname.includes('eser.html')) {
+    if (window.location.pathname.includes('eser.html')) {
         loadEserSayfasi();
     }
-    
+
     // Eğer yazar.html sayfasındaysak yazar detaylarını yükle
-    if(window.location.pathname.includes('yazar.html')) {
+    if (window.location.pathname.includes('yazar.html')) {
         const params = new URLSearchParams(window.location.search);
         const isim = params.get('isim');
-        if(isim) yukleYazarSayfasi(isim);
+        if (isim) yukleYazarSayfasi(isim);
     }
 });
 
@@ -74,14 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function initAuth() {
     const navLinks = document.querySelector('.nav-links');
     const navMobile = document.getElementById('navMobile');
-    
-    if(navLinks) {
+
+    if (navLinks) {
         const authLi = document.createElement('li');
         authLi.id = "authDesktop";
         navLinks.appendChild(authLi);
     }
-    
-    if(navMobile) {
+
+    if (navMobile) {
         const authDiv = document.createElement('div');
         authDiv.id = "authMobile";
         authDiv.style.marginTop = "1.5rem";
@@ -91,23 +93,23 @@ function initAuth() {
     auth.onAuthStateChanged((user) => {
         const desktop = document.getElementById('authDesktop');
         const mobile = document.getElementById('authMobile');
-        
-        if(user) {
+
+        if (user) {
             const html = `<a href="profil.html" class="btn btn-outline" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem; border-color:var(--gold); color:var(--gold);">Profilim</a>`;
-            if(desktop) desktop.innerHTML = html;
-            if(mobile) mobile.innerHTML = html;
-            
+            if (desktop) desktop.innerHTML = html;
+            if (mobile) mobile.innerHTML = html;
+
             // Eğer profil sayfasındaysak bilgileri çek
-            if(window.location.pathname.includes('profil.html')) {
+            if (window.location.pathname.includes('profil.html')) {
                 yukleProfil(user);
             }
         } else {
             const html = `<a href="auth.html" class="btn btn-primary" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem;">Giriş / Kayıt</a>`;
-            if(desktop) desktop.innerHTML = html;
-            if(mobile) mobile.innerHTML = html;
-            
+            if (desktop) desktop.innerHTML = html;
+            if (mobile) mobile.innerHTML = html;
+
             // Profil sayfasında ama giriş yapmamışsa anasayfaya at
-            if(window.location.pathname.includes('profil.html')) {
+            if (window.location.pathname.includes('profil.html')) {
                 window.location.href = 'index.html';
             }
         }
@@ -117,8 +119,8 @@ function initAuth() {
 function switchAuthTab(tab) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    
-    if(tab === 'giris') {
+
+    if (tab === 'giris') {
         document.getElementById('tabGiris').classList.add('active');
         document.getElementById('formGiris').classList.add('active');
     } else {
@@ -133,27 +135,27 @@ async function kayitOl(event) {
     const name = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const pass = document.getElementById('regPass').value;
-    
+
     btn.innerHTML = 'Kayıt Olunuyor...';
     btn.disabled = true;
-    
+
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-        
+
         // E-posta doğrulama gönder (İstediğiniz özellik)
         await userCredential.user.sendEmailVerification();
-        
+
         // Kullanıcı profilini veritabanına kaydet
         await db.collection("Kullanicilar").doc(userCredential.user.uid).set({
             isim: name,
             email: email,
             kayitTarihi: firebase.firestore.FieldValue.serverTimestamp()
         });
-        
+
         showToast('Kayıt Başarılı!', 'E-posta adresinize doğrulama linki gönderildi. Lütfen onaylayın.', 'success');
         setTimeout(() => { window.location.href = 'index.html'; }, 3000);
-        
-    } catch(err) {
+
+    } catch (err) {
         btn.innerHTML = 'Hesap Oluştur';
         btn.disabled = false;
         showToast('Hata', err.message, 'error');
@@ -165,15 +167,15 @@ async function girisYap(event) {
     const btn = document.getElementById('btnLogin');
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPass').value;
-    
+
     btn.innerHTML = 'Giriş Yapılıyor...';
     btn.disabled = true;
-    
+
     try {
         await auth.signInWithEmailAndPassword(email, pass);
         showToast('Hoş Geldiniz', 'Başarıyla giriş yapıldı.', 'success');
         setTimeout(() => { window.location.href = 'paylasim.html'; }, 1500);
-    } catch(err) {
+    } catch (err) {
         btn.innerHTML = 'Sisteme Gir';
         btn.disabled = false;
         showToast('Hata', 'E-posta veya şifre hatalı!', 'error');
@@ -181,11 +183,58 @@ async function girisYap(event) {
 }
 
 function cikisYap(event) {
-    if(event) event.preventDefault();
+    if (event) event.preventDefault();
     auth.signOut().then(() => {
         showToast('Çıkış', 'Hesabınızdan çıkış yapıldı.', 'success');
         setTimeout(() => { window.location.href = 'index.html'; }, 1500);
     });
+}
+
+function switchProfileTab(tabId) {
+    // Tüm tab içeriklerini gizle
+    const tabs = document.querySelectorAll('.profile-tab-content');
+    tabs.forEach(t => t.style.display = 'none');
+    
+    // Tüm nav item'ları pasif yap
+    const items = document.querySelectorAll('.dashboard-nav-item');
+    items.forEach(i => i.classList.remove('active'));
+    
+    // İlgili tabı göster ve nav item'ı aktif yap
+    const activeTab = document.getElementById('tab-' + tabId);
+    if(activeTab) activeTab.style.display = 'block';
+    
+    const activeNavItem = document.getElementById('nav-' + tabId);
+    if(activeNavItem) activeNavItem.classList.add('active');
+
+    // Eğer ayarlar tabına geçildiyse temayı vurgula
+    if(tabId === 'ayarlar') {
+        setGlobalTheme(localStorage.getItem('theme') || 'light');
+    }
+}
+
+async function guncelleMahlas() {
+    const user = auth.currentUser;
+    if(!user) return;
+    
+    const mahlasInput = document.getElementById('accMahlas');
+    const btn = document.getElementById('btnSaveMahlas');
+    const val = mahlasInput.value.trim();
+    
+    btn.disabled = true;
+    btn.innerText = "Gelişiyor...";
+    
+    try {
+        await db.collection("Kullanicilar").doc(user.uid).update({
+            mahlas: val
+        });
+        showToast('Başarılı', 'Edebi mahlasınız tanımlandı.', 'success');
+        yukleProfil(user);
+    } catch(err) {
+        showToast('Hata', 'Mahlas kaydedilemedi.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Kaydet";
+    }
 }
 
 // --- PROFİL VE ADMİNLER ---
@@ -197,6 +246,12 @@ async function yukleProfil(user) {
     const myGrid = document.getElementById('myPoemsGrid');
     const likedGrid = document.getElementById('likedPoemsGrid');
     
+    // Hesap bilgileri elementleri
+    const accName = document.getElementById('accName');
+    const accEmail = document.getElementById('accEmail');
+    const accDate = document.getElementById('accDate');
+    const accMahlas = document.getElementById('accMahlas');
+
     // İstatistik elementleri
     const totalViewsEl = document.getElementById('totalViews');
     const totalLikesEl = document.getElementById('totalLikes');
@@ -208,52 +263,101 @@ async function yukleProfil(user) {
         const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
         if(userDoc.exists) {
             const data = userDoc.data();
-            pName.innerText = data.isim || "İsimsiz Yazar";
+            const displayName = data.isim || "İsimsiz Yazar";
+            const userMahlas = data.mahlas || "";
+            
+            pName.innerText = displayName;
             pEmail.innerText = user.email;
+
+            // Hesap sekmesini doldur
+            if(accName) accName.innerText = displayName;
+            if(accEmail) accEmail.innerText = user.email;
+            if(accMahlas) accMahlas.value = userMahlas;
+            if(accDate) accDate.innerText = user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('tr-TR') : '-';
+
+            // Eser ekleme formundaki bilgileri otomatik doldur
+            const bulkEmail = document.getElementById('bulkAuthorEmail');
+            const bulkAuthor = document.getElementById('bulkAuthorName');
+            if(bulkEmail) bulkEmail.value = user.email;
+            // EĞER MAHLAS VARSA FORMA ONU YAZ
+            if(bulkAuthor) bulkAuthor.value = userMahlas || displayName;
             
             if(data.rol === "admin") {
                 pRole.innerText = "Yönetici (Admin)";
                 pRole.style.color = "var(--gold)";
-                adminPanel.style.display = "block";
+                if(adminPanel) adminPanel.style.display = "block";
             }
         } else {
             pName.innerText = "Misafir Yazar";
             pEmail.innerText = user.email;
         }
-        
+
         // 1. Kendi Eserlerim ve İstatistik Hesaplama
         const mySnapshot = await db.collection("Eserler").where("sahipUid", "==", user.uid).get();
         myGrid.innerHTML = '';
-        
+
         let totalViews = 0;
         let totalLikes = 0;
-        
-        if(mySnapshot.empty) {
+
+        if (mySnapshot.empty) {
             myGrid.innerHTML = '<p style="grid-column: 1/-1; color:var(--text-muted);">Henüz bir eser tescillemediniz.</p>';
         } else {
-            mySnapshot.forEach(doc => {
+            const allDocs = mySnapshot.docs;
+            const initialCount = 3;
+
+            // İlk 3 taneyi render et
+            const renderChunk = (start, end) => {
+                for (let i = start; i < end && i < allDocs.length; i++) {
+                    const doc = allDocs[i];
+                    renderPoemCard(myGrid, doc.id, doc.data());
+                }
+            };
+
+            renderChunk(0, initialCount);
+
+            // Daha fazla butonu mantığı
+            const btnContainer = document.getElementById('morePoemsBtnContainer');
+            const btnMore = document.getElementById('btnLoadMorePoems');
+
+            if (allDocs.length > initialCount && btnContainer) {
+                btnContainer.style.display = 'block';
+                let currentCount = initialCount;
+                btnMore.onclick = () => {
+                    renderChunk(currentCount, currentCount + 6);
+                    currentCount += 6;
+                    if (currentCount >= allDocs.length) btnContainer.style.display = 'none';
+                };
+            }
+
+            // İstatistikleri tüm dökümanlar üzerinden hesapla
+            allDocs.forEach(doc => {
                 const eser = doc.data();
-                const eserLikes = (eser.likes || []).length;
                 totalViews += (eser.goruntulenme || 0);
-                totalLikes += eserLikes;
-                renderPoemCard(myGrid, doc.id, eser);
+                totalLikes += (eser.likes || []).length;
             });
         }
-        
+
         // İstatistikleri yazdır
-        if(totalViewsEl) totalViewsEl.innerText = totalViews;
-        if(totalLikesEl) totalLikesEl.innerText = totalLikes;
-        if(poemCountEl) poemCountEl.innerText = mySnapshot.size;
+        if (totalViewsEl) totalViewsEl.innerText = totalViews;
+        if (totalLikesEl) totalLikesEl.innerText = totalLikes;
+        if (poemCountEl) poemCountEl.innerText = mySnapshot.size;
+
+        // Rozetleri hesapla ve göster
+        awardBadges({
+            poemCount: mySnapshot.size,
+            totalViews: totalViews,
+            totalLikes: totalLikes
+        }, "userBadges");
 
         // 2. Beğenilen Eserler (Klasikler ve Eserler)
         likedGrid.innerHTML = '';
-        
+
         // Klasiklerden beğendikleri
         const likedKlasik = await db.collection("Klasikler").where("likes", "array-contains", user.uid).get();
         // Topluluktan beğendikleri
         const likedEser = await db.collection("Eserler").where("likes", "array-contains", user.uid).get();
-        
-        if(likedKlasik.empty && likedEser.empty) {
+
+        if (likedKlasik.empty && likedEser.empty) {
             likedGrid.innerHTML = '<p style="grid-column: 1/-1; color:var(--text-muted);">Henüz bir eseri beğenmediniz.</p>';
         } else {
             likedKlasik.forEach(doc => renderPoemCard(likedGrid, doc.id, doc.data(), true));
@@ -262,7 +366,7 @@ async function yukleProfil(user) {
 
         // 3. Eserlerime Gelen Yorumlar
         const commentsDiv = document.getElementById('myRecentComments');
-        if(commentsDiv) {
+        if (commentsDiv) {
             commentsDiv.innerHTML = '';
             let commentFound = false;
 
@@ -271,7 +375,7 @@ async function yukleProfil(user) {
                 const eser = doc.data();
                 const eserId = doc.id;
                 const cSnapshot = await db.collection("Eserler").doc(eserId).collection("Yorumlar").orderBy("tarih", "desc").limit(3).get();
-                
+
                 cSnapshot.forEach(cDoc => {
                     commentFound = true;
                     const cData = cDoc.data();
@@ -284,7 +388,7 @@ async function yukleProfil(user) {
                     cDiv.style.marginBottom = '10px';
                     cDiv.style.cursor = 'pointer';
                     cDiv.onclick = () => { window.location.href = 'eser.html?id=' + eserId; };
-                    
+
                     const tarihStr = cData.tarih && cData.tarih.toDate ? cData.tarih.toDate().toLocaleDateString('tr-TR') : '';
 
                     cDiv.innerHTML = `
@@ -301,12 +405,12 @@ async function yukleProfil(user) {
 
             await Promise.all(commentPromises);
 
-            if(!commentFound) {
+            if (!commentFound) {
                 commentsDiv.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Henüz eserlerinize yorum yapılmamış.</p>';
             }
         }
 
-    } catch(err) {
+    } catch (err) {
         console.error("Profil yükleme hatası:", err);
         pName.innerText = "Hata oluştu.";
     }
@@ -316,7 +420,7 @@ async function yukleProfil(user) {
 function renderPoemCard(container, id, eser, isKlasik = false) {
     let kisaMetin = eser.metin;
     const misralar = eser.metin.split('<br>');
-    if(misralar.length > 3) {
+    if (misralar.length > 3) {
         kisaMetin = misralar.slice(0, 3).join('<br>') + '...';
     }
 
@@ -324,7 +428,7 @@ function renderPoemCard(container, id, eser, isKlasik = false) {
     card.className = 'poem-card reveal active';
     card.style.cursor = 'pointer';
     card.onclick = () => { window.location.href = 'eser.html?id=' + id; };
-    
+
     card.innerHTML = `
         <div class="poem-card-tag" style="${isKlasik ? 'background:rgba(212,175,55,0.15); color:var(--gold);' : ''}">${isKlasik ? 'Klasik Eser' : (eser.tur || 'Eser')} ${isKlasik ? '' : ('— ' + id)}</div>
         <h3 class="poem-card-title" style="font-size:1.1rem; margin-bottom:0.5rem; margin-top:0.5rem;">${eser.baslik}</h3>
@@ -342,21 +446,21 @@ async function topluSiirYukle() {
     const fileInput = document.getElementById('bulkUploadFile');
     const targetSelect = document.getElementById('bulkUploadTarget');
     const btn = document.getElementById('btnBulkUpload');
-    
-    if(!fileInput.files.length) {
+
+    if (!fileInput.files.length) {
         showToast('Uyarı', 'Lütfen bir JSON dosyası seçin.', 'error');
         return;
     }
-    
+
     const targetCol = targetSelect ? targetSelect.value : "Klasikler";
     const file = fileInput.files[0];
     const reader = new FileReader();
-    
-    reader.onload = async function(e) {
+
+    reader.onload = async function (e) {
         try {
             const siirler = JSON.parse(e.target.result);
-            if(!Array.isArray(siirler)) throw new Error("Dizi formatında değil");
-            
+            if (!Array.isArray(siirler)) throw new Error("Dizi formatında değil");
+
             btn.innerHTML = 'Kontrol Ediliyor...';
             btn.disabled = true;
 
@@ -366,7 +470,7 @@ async function topluSiirYukle() {
             snapshot.forEach(doc => {
                 const text = doc.data().metin || "";
                 const clean = text.replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
-                if(clean) existingTexts.add(clean);
+                if (clean) existingTexts.add(clean);
             });
 
             const batch = db.batch();
@@ -377,14 +481,14 @@ async function topluSiirYukle() {
             // 2. Yeni şiirleri filtrele ve batch'e ekle
             siirler.forEach((eser) => {
                 const cleanNew = (eser.metin || "").replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
-                
+
                 if (existingTexts.has(cleanNew)) {
                     skippedCount++;
                 } else {
                     const randid = Math.floor(100000 + Math.random() * 900000);
                     let docId, finalEser;
 
-                    if(targetCol === "Klasikler") {
+                    if (targetCol === "Klasikler") {
                         docId = "KLASIK-BULK-" + randid;
                         finalEser = { ...eser };
                     } else {
@@ -403,23 +507,23 @@ async function topluSiirYukle() {
 
                     const docRef = db.collection(targetCol).doc(docId);
                     batch.set(docRef, finalEser);
-                    existingTexts.add(cleanNew); 
+                    existingTexts.add(cleanNew);
                     addedCount++;
                 }
             });
 
-            if(addedCount > 0) {
+            if (addedCount > 0) {
                 await batch.commit();
                 showToast('Başarılı', `${addedCount} eser ${targetCol} koleksiyonuna eklendi. (${skippedCount} mükerrer atlandı)`, 'success');
             } else {
                 showToast('Bilgi', 'Eklenecek yeni eser bulunamadı (Hepsi mükerrer).', 'info');
             }
-            
+
             btn.innerHTML = 'Toplu Şiir Yükle';
             btn.disabled = false;
             fileInput.value = '';
-            
-        } catch(err) {
+
+        } catch (err) {
             console.error(err);
             showToast('Hata', 'Dosya işlenirken hata oluştu: ' + err.message, 'error');
             btn.innerHTML = 'Toplu Şiir Yükle';
@@ -499,15 +603,15 @@ const turkSiirleri = [
 
 async function renderPoems(filtre = "Tümü") {
     const grid = document.getElementById('poemsGrid');
-    if(!grid) return;
-    
+    if (!grid) return;
+
     grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Veritabanından Eserler Yükleniyor...</p>';
-    
+
     try {
         const snapshot = await db.collection("Eserler").orderBy("tarih", "desc").get();
-        
+
         // Eğer veritabanı tamamen boşsa, varsayılan (Türk şairler) dizisini veritabanına otomatik yükleyelim (Seed)
-        if(snapshot.empty && turkSiirleri.length > 0) {
+        if (snapshot.empty && turkSiirleri.length > 0) {
             grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--gold); font-size:1.1rem; padding: 3rem 0;">Veritabanı kuruluyor, eserler aktarılıyor...</p>';
             const batch = db.batch();
             turkSiirleri.forEach(eser => {
@@ -525,20 +629,20 @@ async function renderPoems(filtre = "Tümü") {
         grid.innerHTML = '';
         const eserler = [];
         snapshot.forEach(doc => eserler.push(doc.data()));
-        
+
         const filtrelenmis = filtre === "Tümü" ? eserler : eserler.filter(e => e.tur === filtre);
-        
-        if(filtrelenmis.length === 0) {
+
+        if (filtrelenmis.length === 0) {
             grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; font-style:italic; padding: 3rem 0;">Bu kategoride henüz eser tescillenmedi.</p>';
             return;
         }
 
         filtrelenmis.forEach((eser, index) => {
             const gecikme = index * 0.1;
-            
+
             let kisaMetin = eser.metin;
             const misralar = eser.metin.split('<br>');
-            if(misralar.length > 4) {
+            if (misralar.length > 4) {
                 kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
             }
 
@@ -547,7 +651,7 @@ async function renderPoems(filtre = "Tümü") {
             card.style.transitionDelay = gecikme + 's';
             card.style.cursor = 'pointer';
             card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
-            
+
             card.innerHTML = `
                 <div class="poem-card-tag">${eser.tur}</div>
                 <h3 class="poem-card-title">${eser.baslik}</h3>
@@ -559,7 +663,7 @@ async function renderPoems(filtre = "Tümü") {
             `;
             grid.appendChild(card);
         });
-    } catch(err) {
+    } catch (err) {
         console.error("Firebase Hatası:", err);
         grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--red-accent);">Bağlantı hatası: Veritabanına ulaşılamadı.</p>';
     }
@@ -567,19 +671,19 @@ async function renderPoems(filtre = "Tümü") {
 
 function initFilters() {
     const filterBtns = document.querySelectorAll('.filter-btn');
-    if(filterBtns.length === 0) return;
-    
+    if (filterBtns.length === 0) return;
+
     filterBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const container = e.target.parentElement;
             container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
+
             // Filtre tıklandığında aramayı da sıfırla
             const sInput = document.getElementById('searchInput');
-            if(sInput) sInput.value = '';
-            
-            if(container.id === 'klasikFilters') {
+            if (sInput) sInput.value = '';
+
+            if (container.id === 'klasikFilters') {
                 const filterText = e.target.innerText.trim();
                 renderKlasikler(filterText);
             } else {
@@ -593,56 +697,90 @@ function initFilters() {
 function initSearch() {
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
-    if(!searchInput || !searchBtn) return;
-    
+    if (!searchInput || !searchBtn) return;
+
     function executeSearch() {
         const q = searchInput.value.trim().toLowerCase();
         const grid = document.getElementById('poemsGrid') || document.getElementById('klasiklerGrid');
-        if(!grid) return;
-        
+        if (!grid) return;
+
         const cards = grid.querySelectorAll('.poem-card');
-        
+
         cards.forEach(card => {
             const text = card.innerText.toLowerCase();
-            if(text.includes(q)) {
+            if (text.includes(q)) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
     }
-    
+
     searchBtn.addEventListener('click', executeSearch);
     searchInput.addEventListener('keyup', executeSearch); // Harf girdikçe otomatik arasın
 }
 
-// --- TEMA (DARK/LIGHT MODE) ---
+// --- TEMA (GELİŞMİŞ TEMA SİSTEMİ) ---
 function initTheme() {
     const themeBtn = document.getElementById('themeToggle');
-    if(!themeBtn) return;
-    
-    // SVG Icons
     const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
     const sunIcon = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
 
     let currentTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    themeBtn.querySelector('svg').innerHTML = currentTheme === 'dark' ? sunIcon : moonIcon;
+    setGlobalTheme(currentTheme);
 
-    themeBtn.addEventListener('click', () => {
-        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        localStorage.setItem('theme', currentTheme);
-        themeBtn.querySelector('svg').innerHTML = currentTheme === 'dark' ? sunIcon : moonIcon;
+    if(themeBtn) {
+        const svg = themeBtn.querySelector('svg');
+        if(svg) svg.innerHTML = currentTheme === 'dark' ? sunIcon : moonIcon;
+        
+        themeBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            let next;
+            
+            if(current === 'dark') {
+                // Karanlıktan çıkarken kullanıcının tercih ettiği açık temaya dön (varsayılan 'light')
+                next = localStorage.getItem('preferredLightTheme') || 'light';
+            } else {
+                // Herhangi bir açık temadayken (Light/Sepia/Paper) karanlığa geç
+                next = 'dark';
+            }
+            
+            setGlobalTheme(next);
+            if(svg) svg.innerHTML = next === 'dark' ? sunIcon : moonIcon;
+        });
+    }
+}
+
+function setGlobalTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    // Eğer seçilen tema bir "açık" temaysa, bunu kullanıcının favorisi olarak kaydet
+    if(theme !== 'dark') {
+        localStorage.setItem('preferredLightTheme', theme);
+    }
+    
+    // Ayarlar sayfasındaysak kartların görünümünü güncelle
+    const cards = document.querySelectorAll('.theme-card');
+    cards.forEach(c => {
+        if(c.getAttribute('data-theme-val') === theme) {
+            c.style.borderColor = "var(--gold)";
+            c.style.borderWidth = "2px";
+            c.style.boxShadow = "var(--shadow-glow)";
+        } else {
+            c.style.borderColor = "var(--border-soft)";
+            c.style.borderWidth = "2px";
+            c.style.boxShadow = "none";
+        }
     });
 }
 
 // --- NAVBAR SCROLL STATE ---
 function initNavbarState() {
     const nav = document.getElementById('navbar');
-    if(!nav) return;
+    if (!nav) return;
     window.addEventListener('scroll', () => {
-        if(window.scrollY > 50) {
+        if (window.scrollY > 50) {
             nav.classList.add('scrolled');
         } else {
             nav.classList.remove('scrolled');
@@ -654,8 +792,8 @@ function initNavbarState() {
 function setupMobileMenu() {
     const toggles = document.querySelectorAll('.nav-toggle');
     const navMobile = document.getElementById('navMobile');
-    
-    if(!navMobile || toggles.length === 0) return;
+
+    if (!navMobile || toggles.length === 0) return;
 
     // Create overlay
     const overlay = document.createElement('div');
@@ -678,10 +816,10 @@ function setupMobileMenu() {
 // --- SCROLL ANIMATIONS (AOS Alternative) ---
 function initScrollAnimations() {
     const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if(entry.isIntersecting) {
+            if (entry.isIntersecting) {
                 entry.target.classList.add('active');
             }
         });
@@ -702,9 +840,9 @@ function showToast(title, message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     let iconStr = type === 'success' ? '✓' : '✕';
-    
+
     toast.innerHTML = `
         <div class="toast-icon">${iconStr}</div>
         <div class="toast-content">
@@ -712,12 +850,12 @@ function showToast(title, message, type = 'success') {
             <span class="toast-msg">${message}</span>
         </div>
     `;
-    
+
     container.appendChild(toast);
-    
+
     // Trigger animation
     setTimeout(() => toast.classList.add('show'), 10);
-    
+
     // Remove after 4s
     setTimeout(() => {
         toast.classList.remove('show');
@@ -730,7 +868,7 @@ async function sorguTescil() {
     const input = document.getElementById('tescilInput');
     const sonucBox = document.getElementById('tescilSonuc');
     const loader = document.getElementById('tescilLoader');
-    
+
     if (!input || !sonucBox || !loader) return;
 
     const val = input.value.trim().toUpperCase();
@@ -746,7 +884,7 @@ async function sorguTescil() {
         const docRef = await db.collection("Eserler").doc(val).get();
         loader.style.display = 'none';
         sonucBox.style.display = 'block';
-        
+
         if (docRef.exists) {
             sonucBox.innerHTML = '<span style="color:var(--green-ok); font-weight:600;">✓ KORUMA ALTINDA:</span> Bu kod doğrulanmış bir edebi esere aittir.';
             showToast('Başarılı', 'Eser kaydı bulundu.', 'success');
@@ -754,7 +892,7 @@ async function sorguTescil() {
             sonucBox.innerHTML = '<span style="color:var(--red-accent); font-weight:600;">✕ KAYIT BULUNAMADI:</span> Girdiğiniz koda ait tescil tespit edilemedi.';
             showToast('Bulunamadı', 'Geçersiz veya hatalı kod.', 'error');
         }
-    } catch(err) {
+    } catch (err) {
         loader.style.display = 'none';
         showToast('Hata', 'Sorgu sırasında veritabanına ulaşılamadı.', 'error');
     }
@@ -765,29 +903,29 @@ async function detayliSorguTescil() {
     const input = document.getElementById('tescilInputBig');
     const resultBox = document.getElementById('tescilResultBox');
     const btn = document.getElementById('detayliBtn');
-    
-    if(!input || !resultBox) return;
-    
+
+    if (!input || !resultBox) return;
+
     const val = input.value.trim().toUpperCase();
-    if(val === '') {
+    if (val === '') {
         showToast('Eksik Bilgi', 'Tescil kodu alanı boş bırakılamaz.', 'error');
         return;
     }
-    
+
     const originalText = btn.innerHTML;
     btn.innerHTML = 'Aranıyor...';
     btn.style.opacity = '0.7';
     resultBox.style.display = 'none';
-    
+
     try {
         const docRef = await db.collection("Eserler").doc(val).get();
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
-        
-        if(docRef.exists) {
+
+        if (docRef.exists) {
             const eser = docRef.data();
             const tarihStr = eser.tarih ? eser.tarih.toDate().toLocaleString('tr-TR') : 'Bilinmiyor';
-            
+
             resultBox.innerHTML = `
                 <h3 class="result-title">Tescil Kaydı Bulundu</h3>
                 <div class="result-row"><div class="result-key">Eser Adı</div><div class="result-val">${eser.baslik}</div></div>
@@ -796,13 +934,13 @@ async function detayliSorguTescil() {
                 <div class="result-row"><div class="result-key">Eser Türü</div><div class="result-val">${eser.tur}</div></div>
                 <div class="result-row"><div class="result-key">Mülkiyet Durumu</div><div class="result-val"><span class="result-badge-ok">DOĞRULANDI VE KORUMA ALTINDA</span></div></div>
             `;
-            
+
             resultBox.style.display = 'block';
             showToast('Eser Bulundu', 'Tescil kaydı başarıyla getirildi.', 'success');
         } else {
             showToast('Kayıt Yok', 'Sistemde böyle bir tescil kodu bulunamadı.', 'error');
         }
-    } catch(err) {
+    } catch (err) {
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
         showToast('Hata', 'Sorgu sırasında veritabanına ulaşılamadı.', 'error');
@@ -812,10 +950,10 @@ async function detayliSorguTescil() {
 // --- ESER PAYLAŞIM FORMU ---
 async function submitEser(event) {
     event.preventDefault();
-    
+
     // OTURUM KONTROLÜ
     const user = auth.currentUser;
-    if(!user) {
+    if (!user) {
         showToast('Yetkisiz İşlem', 'Eser tescil etmek için önce giriş yapmalısınız.', 'error');
         setTimeout(() => { window.location.href = 'auth.html'; }, 2000);
         return;
@@ -823,66 +961,66 @@ async function submitEser(event) {
 
     const btn = event.target.querySelector('button[type="submit"]');
     const originalText = btn.innerHTML;
-    
+
     // Form verilerini al
     const form = event.target;
     const baslik = form.querySelector('input[placeholder="Örn: Sessiz Gemi"]').value.trim();
     const yazar = form.querySelector('input[placeholder="Kendi adınız veya mahlasınız"]').value.trim();
     const tur = form.querySelector('select').value;
     const metin = form.querySelector('textarea').value.trim();
-    
-    if(!baslik || !yazar || !metin) {
+
+    if (!baslik || !yazar || !metin) {
         showToast('Eksik Bilgi', 'Lütfen tüm alanları doldurun.', 'error');
         return;
     }
-    
+
     btn.innerHTML = 'İntihal Taraması Yapılıyor...';
     btn.style.opacity = '0.7';
-    
+
     // --- İNTİHAL (KOPYA) KONTROL SİSTEMİ ---
     try {
         const cleanMetin = metin.toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
         let intihalKodu = null;
-        
+
         // 1. Eserler (Kullanıcı Tescilleri) Taraması
         const eserlerSnap = await db.collection("Eserler").get();
         eserlerSnap.forEach(doc => {
             const rawOld = doc.data().metin || "";
             const cleanOld = rawOld.replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
             // Eğer boşluksuz/noktalamasız metinler tamamen aynıysa, veya biri diğerinin içinde geçiyorsa
-            if(cleanOld === cleanMetin || (cleanMetin.includes(cleanOld) && cleanOld.length > 20) || (cleanOld.includes(cleanMetin) && cleanMetin.length > 20)) {
+            if (cleanOld === cleanMetin || (cleanMetin.includes(cleanOld) && cleanOld.length > 20) || (cleanOld.includes(cleanMetin) && cleanMetin.length > 20)) {
                 intihalKodu = doc.id;
             }
         });
-        
+
         // 2. Klasikler Taraması
-        if(!intihalKodu) {
+        if (!intihalKodu) {
             const klasiklerSnap = await db.collection("Klasikler").get();
             klasiklerSnap.forEach(doc => {
                 const rawOld = doc.data().metin || "";
                 const cleanOld = rawOld.replace(/<br>/g, '').toLowerCase().replace(/[^a-z0-9ğüşıöç]/g, '');
-                if(cleanOld === cleanMetin || (cleanMetin.includes(cleanOld) && cleanOld.length > 20) || (cleanOld.includes(cleanMetin) && cleanMetin.length > 20)) {
+                if (cleanOld === cleanMetin || (cleanMetin.includes(cleanOld) && cleanOld.length > 20) || (cleanOld.includes(cleanMetin) && cleanMetin.length > 20)) {
                     intihalKodu = doc.id;
                 }
             });
         }
-        
+
         // Eğer kopya bulunduysa kaydetmeyi reddet
-        if(intihalKodu) {
+        if (intihalKodu) {
             btn.innerHTML = originalText;
             btn.style.opacity = '1';
             showToast('İntihal Tespit Edildi!', `Bu eser zaten sistemimizde [${intihalKodu}] koduyla tescillidir. Başkasının eserini alamazsınız.`, 'error');
             return;
         }
-    } catch(err) {
+    } catch (err) {
         console.error("İntihal Taraması Hatası:", err);
     }
 
     btn.innerHTML = 'Tescilleniyor...';
-    
+
     // Benzersiz Tescil Kodu
     const tescilKodu = "TM-2025-" + Math.floor(10000 + Math.random() * 90000);
-    
+
     try {
         await db.collection("Eserler").doc(tescilKodu).set({
             id: tescilKodu,
@@ -895,7 +1033,7 @@ async function submitEser(event) {
             sahipUid: user.uid,       // Eseri yükleyen kişinin Firebase kimliği
             sahipEmail: user.email    // Eseri yükleyen kişinin e-postası
         });
-        
+
         // --- EMAILJS İLE TESCİL MAİLİ GÖNDERME ---
         try {
             emailjs.init("xCey005-FS4NnPHWS");
@@ -909,13 +1047,13 @@ async function submitEser(event) {
         } catch (mailErr) {
             console.error("Mail gönderim hatası:", mailErr);
         }
-        
+
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
         showToast('Tescil Başarılı', 'Eseriniz kaydedildi ve tescil kodunuz e-postanıza gönderildi!', 'success');
         form.reset();
-        
-    } catch(err) {
+
+    } catch (err) {
         console.error("Kayıt Hatası:", err);
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
@@ -926,12 +1064,12 @@ async function submitEser(event) {
 // --- TYPEWRITER EFFECT ---
 function setupTypewriter() {
     const tw = document.querySelector('.typewriter');
-    if(!tw) return;
-    
+    if (!tw) return;
+
     const text = tw.getAttribute('data-text');
     tw.innerHTML = '';
     let i = 0;
-    
+
     function type() {
         if (i < text.length) {
             tw.innerHTML += text.charAt(i);
@@ -939,7 +1077,7 @@ function setupTypewriter() {
             setTimeout(type, 50);
         }
     }
-    
+
     setTimeout(type, 500);
 }
 
@@ -947,9 +1085,9 @@ function setupTypewriter() {
 
 async function renderKlasikler(filtre = "Tümü") {
     const grid = document.getElementById('klasiklerGrid');
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Ölümsüz eserler veritabanından getiriliyor...</p>';
-    
+
     try {
         const snapshot = await db.collection("Klasikler").get();
 
@@ -960,27 +1098,27 @@ async function renderKlasikler(filtre = "Tümü") {
             data.id = doc.id; // Firebase doküman ID'sini al
             eserler.push(data);
         });
-        
+
         let filtrelenmis = eserler;
-        if(filtre !== "Tümü") {
+        if (filtre !== "Tümü") {
             const searchVal = filtre.toLowerCase().trim();
             filtrelenmis = eserler.filter(s => {
-                if(!s.yazar) return false;
+                if (!s.yazar) return false;
                 return s.yazar.toLowerCase().includes(searchVal) || searchVal.includes(s.yazar.toLowerCase());
             });
         }
-        
-        if(filtrelenmis.length === 0) {
+
+        if (filtrelenmis.length === 0) {
             grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; font-style:italic; padding: 3rem 0;">Eser bulunamadı.</p>';
             return;
         }
-        
+
         filtrelenmis.forEach((eser, index) => {
             const gecikme = index * 0.1;
-            
+
             let kisaMetin = eser.metin;
             const misralar = eser.metin.split('<br>');
-            if(misralar.length > 4) {
+            if (misralar.length > 4) {
                 kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
             }
 
@@ -989,7 +1127,7 @@ async function renderKlasikler(filtre = "Tümü") {
             card.style.transitionDelay = gecikme + 's';
             card.style.cursor = 'pointer';
             card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
-            
+
             card.innerHTML = `
                 <div class="klasik-badge">Ölümsüz Eser</div>
                 <h3 class="poem-card-title" style="margin-top:1rem;">${eser.baslik}</h3>
@@ -1004,7 +1142,7 @@ async function renderKlasikler(filtre = "Tümü") {
             grid.appendChild(card);
         });
 
-    } catch(err) {
+    } catch (err) {
         console.error("Klasikler Hatası:", err);
         grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--red-accent);">Bağlantı hatası: Veritabanına ulaşılamadı.</p>';
     }
@@ -1014,45 +1152,45 @@ async function renderKlasikler(filtre = "Tümü") {
 async function loadEserSayfasi() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    
-    if(!id) {
+
+    if (!id) {
         document.getElementById('eTitle').innerText = "Eser Bulunamadı";
         document.getElementById('eText').innerText = "URL'de tescil veya eser kodu eksik.";
         return;
     }
-    
+
     try {
         let docRef;
         const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
         const ref = db.collection(colName).doc(id);
-        
+
         try {
             await ref.update({ goruntulenme: firebase.firestore.FieldValue.increment(1) });
-        } catch(e) {}
-        
+        } catch (e) { }
+
         docRef = await ref.get();
-        
-        if(!docRef.exists) {
+
+        if (!docRef.exists) {
             document.getElementById('eTitle').innerText = "Hata 404";
             document.getElementById('eText').innerText = "Sistemimizde bu koda ait bir eser bulunmamaktadır.";
             return;
         }
-        
+
         const eser = docRef.data();
         document.getElementById('eTitle').innerText = eser.baslik;
         document.getElementById('eAuthor').innerText = eser.yazar;
         document.getElementById('eText').innerHTML = eser.metin;
         document.getElementById('eCode').innerText = id;
-        
+
         const viewEl = document.getElementById('viewCountText');
-        if(viewEl) viewEl.innerText = (eser.goruntulenme || 1);
-        
-        if(eser.tarih && eser.tarih.toDate) {
+        if (viewEl) viewEl.innerText = (eser.goruntulenme || 1);
+
+        if (eser.tarih && eser.tarih.toDate) {
             document.getElementById('eDate').innerText = eser.tarih.toDate().toLocaleDateString('tr-TR');
         } else {
             document.getElementById('eDate').innerText = "Arşiv Kaydı";
         }
-        
+
         // Navigasyon Ayarları
         setupPoemNavigation(colName, eser.yazar, id);
 
@@ -1061,42 +1199,42 @@ async function loadEserSayfasi() {
         const likeCountEl = document.getElementById('likeCount');
         const btnLike = document.getElementById('btnLike');
         const likeIcon = document.getElementById('likeIcon');
-        
+
         likeCountEl.innerText = likes.length;
-        
+
         auth.onAuthStateChanged(user => {
-            if(user && likes.includes(user.uid)) {
+            if (user && likes.includes(user.uid)) {
                 likeIcon.setAttribute('fill', 'var(--red-accent)');
             }
-            
+
             btnLike.onclick = async () => {
-                if(!user) {
+                if (!user) {
                     showToast('Hata', 'Eserleri beğenmek için giriş yapmalısınız.', 'error');
                     return;
                 }
-                
-                if(btnLike.getAttribute('data-processing') === 'true') return;
+
+                if (btnLike.getAttribute('data-processing') === 'true') return;
                 btnLike.setAttribute('data-processing', 'true');
                 btnLike.style.opacity = '0.7';
-                
+
                 try {
                     const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
                     const ref = db.collection(colName).doc(id);
-                    
+
                     // Beğeni işlemini (Like/Unlike) yap
-                    if(likes.includes(user.uid)) {
+                    if (likes.includes(user.uid)) {
                         await ref.set({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) }, { merge: true });
                         likeIcon.setAttribute('fill', 'none');
                         // Tekrar kontrol: başkası tıklamış olabilir, yerel listeyi güvenli güncelle
                         const idx = likes.indexOf(user.uid);
-                        if(idx > -1) likes.splice(idx, 1);
+                        if (idx > -1) likes.splice(idx, 1);
                     } else {
                         await ref.set({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) }, { merge: true });
                         likeIcon.setAttribute('fill', 'var(--red-accent)');
-                        if(!likes.includes(user.uid)) likes.push(user.uid);
+                        if (!likes.includes(user.uid)) likes.push(user.uid);
                     }
                     likeCountEl.innerText = likes.length;
-                } catch(err) {
+                } catch (err) {
                     console.error("Beğeni eklenirken hata:", err);
                     showToast('Hata', 'İşlem başarısız oldu.', 'error');
                 } finally {
@@ -1105,18 +1243,18 @@ async function loadEserSayfasi() {
                 }
             };
         });
-        
+
         // Yetki kontrolü (Silme işlemi için)
         checkAdminSil(id, eser);
-        
+
         // Yorumları Yükle
         yukleYorumlar(colName, id);
-        
+
         auth.onAuthStateChanged(user => {
             const warn = document.getElementById('commentAuthWarning');
             const inp = document.getElementById('commentInputArea');
-            if(warn && inp) {
-                if(user) {
+            if (warn && inp) {
+                if (user) {
                     warn.style.display = 'none';
                     inp.style.display = 'block';
                 } else {
@@ -1125,8 +1263,8 @@ async function loadEserSayfasi() {
                 }
             }
         });
-        
-    } catch(err) {
+
+    } catch (err) {
         console.error("Eser yüklenirken hata:", err);
         document.getElementById('eTitle').innerText = "Bağlantı Koptu";
         document.getElementById('eText').innerText = "Veritabanından eser çekilemedi. Lütfen sayfayı yenileyin.";
@@ -1139,12 +1277,12 @@ async function setupPoemNavigation(colName, yazar, currentId) {
     const prevBtn = document.getElementById('prevPoem');
     const nextBtn = document.getElementById('nextPoem');
 
-    if(!navDiv || !prevBtn || !nextBtn) return;
+    if (!navDiv || !prevBtn || !nextBtn) return;
 
     try {
         // Aynı yazarın tüm eserlerini çek (basitlik için tarihe veya başlığa göre sıralanabilir)
         const snapshot = await db.collection(colName).where("yazar", "==", yazar).get();
-        if(snapshot.size <= 1) {
+        if (snapshot.size <= 1) {
             navDiv.style.display = 'none';
             return;
         }
@@ -1157,7 +1295,7 @@ async function setupPoemNavigation(colName, yazar, currentId) {
         // Mevcut şiirin indeksini bul
         const currentIndex = poems.findIndex(p => p.id === currentId);
 
-        if(currentIndex > 0) {
+        if (currentIndex > 0) {
             const prev = poems[currentIndex - 1];
             prevBtn.href = `eser.html?id=${prev.id}`;
             prevBtn.style.opacity = '1';
@@ -1168,7 +1306,7 @@ async function setupPoemNavigation(colName, yazar, currentId) {
             prevBtn.style.pointerEvents = 'none';
         }
 
-        if(currentIndex < poems.length - 1) {
+        if (currentIndex < poems.length - 1) {
             const next = poems[currentIndex + 1];
             nextBtn.href = `eser.html?id=${next.id}`;
             nextBtn.style.opacity = '1';
@@ -1181,7 +1319,7 @@ async function setupPoemNavigation(colName, yazar, currentId) {
 
         navDiv.style.display = 'flex';
 
-    } catch(err) {
+    } catch (err) {
         console.error("Navigasyon yüklenemedi:", err);
         navDiv.style.display = 'none';
     }
@@ -1190,39 +1328,39 @@ async function setupPoemNavigation(colName, yazar, currentId) {
 // --- ADMİN VEYA ESER SAHİBİ SİLME İŞLEMİ ---
 function checkAdminSil(eserId, eserData) {
     auth.onAuthStateChanged(async (user) => {
-        if(user) {
+        if (user) {
             let yetkili = false;
-            
+
             // Eserin sahibi mi?
-            if(eserData && eserData.sahipUid === user.uid) {
+            if (eserData && eserData.sahipUid === user.uid) {
                 yetkili = true;
             }
-            
+
             // Eğer eserin sahibi değilse, admin mi diye kontrol et
-            if(!yetkili) {
+            if (!yetkili) {
                 const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
-                if(userDoc.exists && userDoc.data().rol === "admin") {
+                if (userDoc.exists && userDoc.data().rol === "admin") {
                     yetkili = true;
                 }
             }
-            
-            if(yetkili) {
+
+            if (yetkili) {
                 const actionContainer = document.getElementById('adminActionContainer');
-                if(actionContainer) {
-                    if(eserData && eserData.sahipUid === user.uid) {
+                if (actionContainer) {
+                    if (eserData && eserData.sahipUid === user.uid) {
                         const p = actionContainer.querySelector('p');
-                        if(p) p.innerText = "Bu eser size ait olduğu için onu veritabanından silebilirsiniz.";
+                        if (p) p.innerText = "Bu eser size ait olduğu için onu veritabanından silebilirsiniz.";
                     }
                     actionContainer.style.display = 'block';
                     document.getElementById('btnSil').onclick = async () => {
                         const onay = confirm("Bu eseri KALICI olarak silmek istediğinize emin misiniz? (Bu işlem geri alınamaz)");
-                        if(onay) {
+                        if (onay) {
                             try {
                                 const colName = eserId.startsWith("KLASIK") ? "Klasikler" : "Eserler";
                                 await db.collection(colName).doc(eserId).delete();
                                 showToast('Silindi', 'Eser veritabanından kalıcı olarak kaldırıldı.', 'success');
                                 setTimeout(() => { window.location.href = 'index.html'; }, 1500);
-                            } catch(err) {
+                            } catch (err) {
                                 console.error(err);
                                 showToast('Hata', 'Silme işlemi başarısız oldu.', 'error');
                             }
@@ -1244,8 +1382,8 @@ function indirResim() {
     const box = document.getElementById('eserReaderBox');
     const btnContainer = box.querySelector('.eser-actions');
     const adminContainer = document.getElementById('adminActionContainer');
-    
-    if(!box) return;
+
+    if (!box) return;
 
     showToast('Hazırlanıyor...', 'Eser resme dönüştürülüyor, lütfen bekleyin...', 'success');
 
@@ -1253,14 +1391,14 @@ function indirResim() {
     const adminGorunurMu = adminContainer && adminContainer.style.display !== 'none';
 
     // Resimde butonların çıkmaması için geçici olarak gizle
-    if(btnContainer) btnContainer.style.display = 'none';
-    if(adminContainer) adminContainer.style.display = 'none';
-    
+    if (btnContainer) btnContainer.style.display = 'none';
+    if (adminContainer) adminContainer.style.display = 'none';
+
     // Rengi sabitle (css variable boşluklarını temizleyerek)
     const cardColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#ffffff';
     const bodyColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-body').trim() || '#ffffff';
     box.style.background = cardColor;
-    
+
     html2canvas(box, {
         scale: 2, // 2x yüksek çözünürlük
         useCORS: true,
@@ -1273,17 +1411,17 @@ function indirResim() {
         document.body.appendChild(link); // Firefox ve eski Chrome uyumluluğu
         link.click();
         document.body.removeChild(link);
-        
+
         // Butonları resim işlemi bittikten sonra eski haline getir
-        if(btnContainer) btnContainer.style.display = 'flex';
-        if(adminGorunurMu) adminContainer.style.display = 'block';
-        
+        if (btnContainer) btnContainer.style.display = 'flex';
+        if (adminGorunurMu) adminContainer.style.display = 'block';
+
         showToast('Başarılı', 'Şiir cihazınıza mükemmel kalitede kaydedildi!', 'success');
     }).catch(err => {
         console.error("Resim oluşturma hatası:", err);
         showToast('Hata', 'Resim oluşturulamadı. Sorun tarayıcınızdan kaynaklanıyor olabilir.', 'error');
-        if(btnContainer) btnContainer.style.display = 'flex';
-        if(adminGorunurMu) adminContainer.style.display = 'block';
+        if (btnContainer) btnContainer.style.display = 'flex';
+        if (adminGorunurMu) adminContainer.style.display = 'block';
     });
 }
 
@@ -1291,35 +1429,35 @@ function indirResim() {
 // --- ŞAİRLER (YAZARLAR) LİSTESİNİ OLUŞTUR ---
 async function renderSairler() {
     const grid = document.getElementById('poetsGrid');
-    if(!grid) return;
-    
+    if (!grid) return;
+
     try {
         const snapshot = await db.collection("Klasikler").get();
-        if(snapshot.empty) {
+        if (snapshot.empty) {
             grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">Henüz şair bulunmuyor.</p>';
             return;
         }
-        
+
         const yazarlarSet = new Set();
         snapshot.forEach(doc => {
             const data = doc.data();
-            if(data.yazar) yazarlarSet.add(data.yazar);
+            if (data.yazar) yazarlarSet.add(data.yazar);
         });
-        
+
         const yazarlar = Array.from(yazarlarSet).sort();
-        
+
         grid.innerHTML = '';
-        
+
         yazarlar.forEach((yazar, i) => {
             const gecikme = i * 0.1;
             const basHarfler = yazar.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            
+
             const card = document.createElement('div');
             card.className = 'poet-card';
             card.style.animation = `fadeUp 0.6s ease ${gecikme}s forwards`;
             card.style.opacity = '0';
             card.onclick = () => { location.href = 'yazar.html?isim=' + encodeURIComponent(yazar); };
-            
+
             card.innerHTML = `
                 <div class="poet-avatar">${basHarfler}</div>
                 <h3 class="poet-name">${yazar}</h3>
@@ -1327,7 +1465,7 @@ async function renderSairler() {
             `;
             grid.appendChild(card);
         });
-        
+
         // Tüm Şiirler kartı
         const allCard = document.createElement('div');
         allCard.className = 'poet-card';
@@ -1340,8 +1478,8 @@ async function renderSairler() {
             <p class="poet-desc">Klasiklerin Tamamını Keşfet</p>
         `;
         grid.appendChild(allCard);
-        
-    } catch(err) {
+
+    } catch (err) {
         console.error("Şairler yüklenirken hata:", err);
         grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--red-accent);">Şairler yüklenirken hata oluştu.</p>';
     }
@@ -1350,11 +1488,11 @@ async function renderSairler() {
 // --- YORUM SİSTEMİ ---
 async function yukleYorumlar(colName, eserId) {
     const list = document.getElementById('commentsList');
-    if(!list) return;
+    if (!list) return;
 
     try {
         const snapshot = await db.collection(colName).doc(eserId).collection("Yorumlar").orderBy("tarih", "desc").get();
-        if(snapshot.empty) {
+        if (snapshot.empty) {
             list.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Henüz yorum yapılmamış. İlk değerlendirmeyi siz yapın.</p>';
             return;
         }
@@ -1367,9 +1505,9 @@ async function yukleYorumlar(colName, eserId) {
             div.style.borderLeft = "2px solid var(--gold)";
             div.style.background = "var(--bg-color-alt)";
             div.style.borderRadius = "0 var(--r) var(--r) 0";
-            
+
             const tarihStr = data.tarih && data.tarih.toDate ? data.tarih.toDate().toLocaleDateString('tr-TR') : '';
-            
+
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; align-items:center;">
                     <strong style="color:var(--gold-dark); font-size:1.1rem;">${data.yazar}</strong>
@@ -1379,25 +1517,25 @@ async function yukleYorumlar(colName, eserId) {
             `;
             list.appendChild(div);
         });
-    } catch(err) {
+    } catch (err) {
         list.innerHTML = '<p style="color:var(--red-accent);">Yorumlar yüklenirken bir hata oluştu.</p>';
     }
 }
 
 async function gonderYorum() {
     const text = document.getElementById('commentText').value.trim();
-    if(!text) {
+    if (!text) {
         showToast('Hata', 'Yorum boş olamaz.', 'error');
         return;
     }
 
     const user = auth.currentUser;
-    if(!user) return;
+    if (!user) return;
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
-    
+
     const btn = document.getElementById('btnSubmitComment');
     btn.disabled = true;
     btn.innerText = "Gönderiliyor...";
@@ -1405,7 +1543,7 @@ async function gonderYorum() {
     try {
         const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
         let isim = "İsimsiz Okur";
-        if(userDoc.exists) isim = userDoc.data().isim || isim;
+        if (userDoc.exists) isim = userDoc.data().isim || isim;
 
         await db.collection(colName).doc(id).collection("Yorumlar").add({
             uid: user.uid,
@@ -1417,7 +1555,7 @@ async function gonderYorum() {
         showToast('Başarılı', 'Yorumunuz eklendi!', 'success');
         document.getElementById('commentText').value = '';
         yukleYorumlar(colName, id);
-    } catch(err) {
+    } catch (err) {
         showToast('Hata', 'Yorum gönderilirken hata oluştu.', 'error');
     } finally {
         btn.disabled = false;
@@ -1431,24 +1569,24 @@ async function yukleYazarSayfasi(isim) {
     const yAvatar = document.getElementById('yAvatar');
     const yCount = document.getElementById('yCount');
     const yGrid = document.getElementById('yazarGrid');
-    
-    if(!yName || !yGrid) return;
-    
+
+    if (!yName || !yGrid) return;
+
     yName.innerText = isim;
     yAvatar.innerText = isim.charAt(0).toUpperCase();
-    
+
     try {
         const snapshot = await db.collection("Klasikler").where("yazar", "==", isim).get();
         yGrid.innerHTML = '';
-        
-        if(snapshot.empty) {
+
+        if (snapshot.empty) {
             yGrid.innerHTML = '<p style="grid-column:1/-1; color:var(--text-muted);">Bu şaire ait henüz bir eser bulunamadı.</p>';
             yCount.innerText = "0";
             return;
         }
-        
+
         yCount.innerText = snapshot.size;
-        
+
         snapshot.forEach((doc, index) => {
             const eser = doc.data();
             const id = doc.id;
@@ -1456,7 +1594,7 @@ async function yukleYazarSayfasi(isim) {
 
             let kisaMetin = eser.metin;
             const misralar = eser.metin.split('<br>');
-            if(misralar.length > 4) {
+            if (misralar.length > 4) {
                 kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
             }
 
@@ -1464,7 +1602,7 @@ async function yukleYazarSayfasi(isim) {
             card.className = 'poem-card reveal active';
             card.style.transitionDelay = gecikme + 's';
             card.onclick = () => { window.location.href = 'eser.html?id=' + id; };
-            
+
             card.innerHTML = `
                 <div class="klasik-badge">Klasik Eser</div>
                 <h3 class="poem-card-title" style="margin-top:1rem;">${eser.baslik}</h3>
@@ -1478,8 +1616,86 @@ async function yukleYazarSayfasi(isim) {
             `;
             yGrid.appendChild(card);
         });
-    } catch(err) {
+    } catch (err) {
         console.error("Yazar sayfası hatası:", err);
         yGrid.innerHTML = '<p style="color:var(--red-accent);">Bilgiler yüklenirken hata oluştu.</p>';
     }
+}
+
+// --- YENİ ÖZELLİKLER (LİDERLİK, ROZET, TEMA) ---
+
+async function yukleLiderlik() {
+    const leaderboardDiv = document.getElementById('weeklyLeaderboard');
+    if (!leaderboardDiv) return;
+
+    try {
+        const snapshot = await db.collection('Eserler').orderBy('goruntulenme', 'desc').limit(5).get();
+        leaderboardDiv.innerHTML = '';
+
+        let rank = 1;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('div');
+            row.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding: 1rem 1.5rem; background: var(--bg-card); border-radius: var(--r); border: 1px solid var(--border-soft); transition: 0.3s;`;
+            row.innerHTML = `
+                <div style="display:flex; align-items:center; gap: 1.2rem;">
+                    <span style="font-weight:700; color:var(--gold); width:20px;">${rank}</span>
+                    <div class="author-avatar" style="width:38px; height:38px; font-size:0.85rem; border:1px solid var(--gold-glow);">${data.yazar ? data.yazar.charAt(0) : '?'}</div>
+                    <span style="font-weight:500; font-family:var(--font-serif); font-size:1.1rem;">${data.yazar || 'Anonim'}</span>
+                </div>
+                <div style="text-align:right;">
+                    <span style="display:block; color:var(--gold-dark); font-weight:600; font-size:0.95rem;">${data.goruntulenme || 0}</span>
+                    <span style="color:var(--text-muted); font-size:0.7rem; text-transform:uppercase; letter-spacing:1px;">Okunma</span>
+                </div>
+            `;
+            leaderboardDiv.appendChild(row);
+            rank++;
+        });
+    } catch (e) { console.log(e); }
+}
+
+function awardBadges(stats, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+
+    const badgeList = [];
+    if (stats.poemCount >= 1) badgeList.push({ name: "Genç Şair", color: "#b08e5a", icon: "✒️" });
+    if (stats.poemCount >= 10) badgeList.push({ name: "Usta Şair", color: "#d4af37", icon: "👑" });
+    if (stats.totalViews >= 500) badgeList.push({ name: "Popüler Kalem", color: "#e67e22", icon: "🔥" });
+    if (stats.totalLikes >= 50) badgeList.push({ name: "Sevilen Şair", color: "#e74c3c", icon: "❤️" });
+
+    if (badgeList.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">Henüz bir rozet kazanılmadı. Eser paylaşarak başlayın!</p>';
+        return;
+    }
+
+    badgeList.forEach(b => {
+        const badge = document.createElement('div');
+        badge.style.cssText = `padding: 0.5rem 1.2rem; background:${b.color}15; border: 1px solid ${b.color}44; color:${b.color}; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display:flex; align-items:center; gap: 8px;`;
+        badge.innerHTML = `<span>${b.icon}</span> ${b.name}`;
+        container.appendChild(badge);
+    });
+}
+
+// initReaderTheme ve setReaderTheme artık global tema ile birleştiği için kaldırıldı.
+
+async function yukleGununSiiri() {
+    const metinEl = document.getElementById('gununSiiriMetin');
+    const yazarEl = document.getElementById('gununSiiriYazar');
+    const kodEl = document.getElementById('gununSiiriKod');
+    if (!metinEl) return;
+    try {
+        // Eserlerden rastgele birini seç
+        const snapshot = await db.collection('Eserler').limit(15).get();
+        if (snapshot.empty) return;
+        const docs = snapshot.docs;
+        const randomDoc = docs[Math.floor(Math.random() * docs.length)];
+        const data = randomDoc.data();
+        // Şiirin metnini mısralara böl ve ilk 4 mısrayı al
+        const lines = (data.metin || "").split(/<br>|\n/).filter(l => l.trim().length > 1).slice(0, 4);
+        metinEl.innerHTML = lines.map(l => `<p>${l.trim()}</p>`).join('');
+        yazarEl.innerText = data.yazar || "Anonim";
+        kodEl.innerText = data.id || "TM-2025";
+    } catch (e) { console.log("Günün şiiri yüklenemedi:", e); }
 }

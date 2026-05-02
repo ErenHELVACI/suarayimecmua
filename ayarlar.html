@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayarlar — Şuarâ-yı Mecmua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-ar">شعراء</span>
+      <span class="logo-tr">Şuarâ-yı Mecmua</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="kesif.html">Keşfet</a></li>
+      <li><a href="klasikler.html">Klasikler</a></li>
+      <li><a href="sairler.html">Şairler</a></li>
+      <li><a href="paylasim.html">Eser Paylaş</a></li>
+      <li><a href="tescil.html">Tescil Sorgula</a></li>
+      <li><a href="hakkinda.html">Hakkında</a></li>
+    </ul>
+    <button id="themeToggle" class="theme-toggle" aria-label="Temayı Değiştir">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"></svg>
+    </button>
+    <button class="nav-toggle" aria-label="Menü">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="kesif.html">Keşfet</a>
+    <a href="klasikler.html">Klasikler</a>
+    <a href="sairler.html">Şairler</a>
+    <a href="paylasim.html">Eser Paylaş</a>
+    <a href="tescil.html">Tescil Sorgula</a>
+    <a href="hakkinda.html">Hakkında</a>
+  </div>
+</nav>
+
+<section class="section" style="padding-top: 8rem; min-height: 80vh;">
+  <div class="container">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-tag">Kullanıcı Paneli</p>
+        <h2>Hesap Ayarları</h2>
+        <p style="color:var(--text-muted);">Görünüm ve tercihlerinizi buradan yönetin.</p>
+      </div>
+      <a href="profil.html" class="btn btn-outline" style="padding: 0.5rem 1.5rem; height: max-content;">Profilime Dön</a>
+    </div>
+
+    <!-- PROFİL DASHBOARD NAV -->
+    <div class="profile-dashboard-nav reveal" style="display:flex; gap: 2.5rem; border-bottom: 1px solid var(--border-soft); margin-bottom: 3.5rem; padding-bottom: 1rem; overflow-x: auto; white-space: nowrap;">
+        <a href="profil.html" style="color:var(--text-muted); font-weight:500; display:flex; align-items:center; gap:0.5rem; text-decoration:none; transition:0.3s;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Profilim
+        </a>
+        <a href="paylasim.html" style="color:var(--text-muted); font-weight:500; display:flex; align-items:center; gap:0.5rem; text-decoration:none; transition:0.3s;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>
+            Eser Ekle
+        </a>
+        <a href="ayarlar.html" style="color:var(--gold); font-weight:700; border-bottom: 2px solid var(--gold); padding-bottom: 1rem; display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Profil Ayarları
+        </a>
+        <a href="ayarlar.html#hesap" style="color:var(--text-muted); font-weight:500; display:flex; align-items:center; gap:0.5rem; text-decoration:none; transition:0.3s;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Hesap Bilgileri
+        </a>
+    </div>
+
+    <!-- TEMA AYARLARI -->
+    <div class="reveal" style="margin-top: 3rem;">
+        <h3 style="margin-bottom: 1.5rem; font-family: var(--font-serif); font-size: 1.8rem; color: var(--gold);">Görünüm ve Tema</h3>
+        <div style="background:var(--bg-color-alt); padding: 2.5rem; border-radius: var(--r); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm);">
+            <p style="color:var(--text-soft); margin-bottom: 2rem; font-weight: 500;">Mecmua deneyiminizi özelleştirmek için bir tema seçin. Bu ayar tüm sayfalara uygulanacaktır.</p>
+            
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem;" id="globalThemeSettings">
+                <div onclick="setGlobalTheme('light')" style="cursor:pointer; padding: 1.5rem; border: 2px solid var(--border-soft); border-radius: var(--r); background: #faf7f2; text-align: center; transition: 0.3s;" class="theme-card" data-theme-val="light">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">⚪</span>
+                    <strong style="color: #1a1714;">Aydınlık</strong>
+                </div>
+                <div onclick="setGlobalTheme('dark')" style="cursor:pointer; padding: 1.5rem; border: 2px solid var(--border-soft); border-radius: var(--r); background: #0d0c0a; text-align: center; transition: 0.3s;" class="theme-card" data-theme-val="dark">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">🌙</span>
+                    <strong style="color: #f0e9df;">Gece Modu</strong>
+                </div>
+                <div onclick="setGlobalTheme('sepia')" style="cursor:pointer; padding: 1.5rem; border: 2px solid var(--border-soft); border-radius: var(--r); background: #f4ecd8; text-align: center; transition: 0.3s;" class="theme-card" data-theme-val="sepia">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📜</span>
+                    <strong style="color: #433422;">Sepya</strong>
+                </div>
+                <div onclick="setGlobalTheme('paper')" style="cursor:pointer; padding: 1.5rem; border: 2px solid var(--border-soft); border-radius: var(--r); background: #fcf9f2; text-align: center; transition: 0.3s;" class="theme-card" data-theme-val="paper">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📖</span>
+                    <strong style="color: #2c2c2c;">Kitap Kağıdı</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BİLGİ GÜNCELLEME (TASLAK) -->
+    <div class="reveal" style="margin-top: 4rem; opacity: 0.6; pointer-events: none;">
+        <h3 style="margin-bottom: 1.5rem; font-family: var(--font-serif); font-size: 1.8rem; color: var(--gold);">Profil Bilgileri</h3>
+        <div style="background:var(--bg-color-alt); padding: 2.5rem; border-radius: var(--r); border: 1px solid var(--border-soft);">
+            <p>E-posta değiştirme ve şifre güncelleme özellikleri yakında eklenecektir.</p>
+        </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 Şuarâ-yı Mecmua. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
