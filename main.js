@@ -188,77 +188,7 @@ function cikisYap(event) {
     });
 }
 
-// --- PROFİL VE ADMİN İŞLEMLERİ ---
-async function activeAI() {
-    const panel = document.getElementById('aiPanel');
-    const btn = document.getElementById('btnAI');
-    const analysisText = document.getElementById('aiAnalysisText');
-    const aiImg = document.getElementById('aiGeneratedImg');
-    const aiLoader = document.getElementById('aiLoader');
-    const verseDiv = document.getElementById('aiVerseAnalysis');
-
-    if(!panel) return;
-
-    panel.style.display = 'block';
-    panel.classList.add('active');
-    btn.disabled = true;
-    btn.innerHTML = '<span>⌛</span> Analiz Ediliyor...';
-
-    const title = document.getElementById('eTitle').innerText;
-    const author = document.getElementById('eAuthor').innerText;
-    const fullText = document.getElementById('eText').innerText;
-    
-    // 1. Cümlesel Anlam Analizi (Tüm Mısralar)
-    // Şiiri mısralara böl ve her birinin "anlamını" oluştur
-    const lines = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 1);
-    
-    // Genel edebi şerh şablonları
-    const sherhTemplates = [
-        "Bu mısrada şair, içsel bir huzursuzluğun ve arayışın altını çizmektedir.",
-        "Şair burada doğa olayları üzerinden insan ruhunun derinliklerine atıfta bulunur.",
-        "Bu dize, eserin genelindeki hüzün atmosferini pekiştiren bir anlam taşır.",
-        "Kullanılan kelimeler, somut bir durumdan soyut bir duyguya geçişi simgeler.",
-        "Burada toplumsal bir durumun birey üzerindeki sarsıcı etkisi dile getirilmiştir.",
-        "Şair, karşıt kavramları bir araya getirerek anlamı derinleştirmeyi hedeflemiştir."
-    ];
-
-    const lineMeanings = lines.map((line, index) => {
-        // Popüler şiirler için spesifik anlamlar (Opsiyonel)
-        if(line.includes("Mona Rosa")) return "Şair sevgilisine hitap ederek ona olan özlemini ve aşkının büyüklüğünü ifade ediyor.";
-        if(line.includes("Kırmızı bir kuştur")) return "Ruhun heyecanını ve yaşama olan tutkusunu canlı bir imgeyle açıklıyor.";
-        
-        // Genel anlam üretimi
-        return sherhTemplates[index % sherhTemplates.length];
-    });
-
-    // 2. Görsel Seçimi
-    const aiAssets = [
-        "https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&q=80&w=600",
-        "https://images.unsplash.com/photo-1516339901600-2e1a62d0ed5c?auto=format&fit=crop&q=80&w=600",
-        "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&q=80&w=600"
-    ];
-    const assetImg = aiAssets[Math.floor(Math.random() * aiAssets.length)];
-
-    // AI Bekleme Simülasyonu
-    await new Promise(r => setTimeout(r, 1500));
-
-    aiLoader.style.display = 'none';
-    aiImg.src = assetImg + "&sig=" + Math.random(); 
-    aiImg.style.display = 'block';
-
-    // Mısra Anlamlarını Yazdır
-    verseDiv.innerHTML = '';
-    lines.forEach((line, i) => {
-        const item = document.createElement('div');
-        item.style.marginBottom = "1.5rem";
-        item.innerHTML = `<p style="color:var(--text-soft); font-weight:600; margin-bottom:6px; font-size:1.05rem;">${line}</p>
-                          <p style="font-size:0.95rem; color:var(--gold-dark); padding-left:1.2rem; border-left:3px solid var(--gold-glow); line-height:1.6;">${lineMeanings[i]}</p>`;
-        verseDiv.appendChild(item);
-    });
-
-    btn.innerHTML = '<span>✨</span> Analiz Tamamlandı';
-}
-
+// --- PROFİL VE ADMİNLER ---
 async function yukleProfil(user) {
     const pName = document.getElementById('profilName');
     const pEmail = document.getElementById('profilEmail');
