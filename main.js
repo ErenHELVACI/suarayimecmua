@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPoems();
     yukleLiderlik();
     yukleGununSiiri(); // Günün şiirini dinamik yükle
+    yukleIstatistikler(); // İstatistikleri güncelle
 
     // Klasikleri URL parametresi varsa ona göre filtreleyerek yükle
     if (window.location.pathname.includes('klasikler.html')) {
@@ -1718,4 +1719,37 @@ async function yukleGununSiiri() {
         yazarEl.innerText = data.yazar || "Anonim";
         kodEl.innerText = data.id || "TM-2025";
     } catch (e) { console.log("Günün şiiri yüklenemedi:", e); }
+}
+
+async function yukleIstatistikler() {
+    const eserSpan = document.getElementById('statEser');
+    const yazarSpan = document.getElementById('statYazar');
+    if (!eserSpan || !yazarSpan) return;
+
+    try {
+        // Klasikler sayısını çek
+        const snapKlasik = await db.collection("Klasikler").get();
+        const klasikSayisi = snapKlasik.size;
+        const klasikSairler = new Set();
+        snapKlasik.forEach(doc => {
+            if (doc.data().yazar) klasikSairler.add(doc.data().yazar);
+        });
+        const klasikSairSayisi = klasikSairler.size;
+
+        // Eserler koleksiyonunu dinle (Gerçek zamanlı)
+        db.collection("Eserler").onSnapshot(snap => {
+            const toplamEser = klasikSayisi + snap.size;
+            eserSpan.innerText = toplamEser.toLocaleString('tr-TR');
+            
+            // Eğer sayı çok küçükse (yeni kurulum) bir baz değer eklenebilir ama kullanıcı "gerçek" istedi.
+        });
+
+        // Kullanıcılar koleksiyonunu dinle (Gerçek zamanlı)
+        db.collection("Kullanicilar").onSnapshot(snap => {
+            const toplamYazar = klasikSairSayisi + snap.size;
+            yazarSpan.innerText = toplamYazar.toLocaleString('tr-TR');
+        });
+    } catch (err) {
+        console.error("İstatistikler yüklenirken hata:", err);
+    }
 }
