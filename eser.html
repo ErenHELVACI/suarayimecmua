@@ -110,6 +110,7 @@
      
      <div class="eser-reader-meta">
         <span id="eDate">Sistem Tarihi Aranıyor</span>
+        <span id="eViews" title="Görüntülenme Sayısı" style="color:var(--text-muted);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span id="viewCountText">0</span></span>
         <span id="eCode" class="badge-tag">Sorgulanıyor...</span>
      </div>
 
@@ -118,6 +119,10 @@
         <button id="btnLike" class="btn btn-outline" style="border-color:var(--red-accent); color:var(--red-accent); display:flex; align-items:center; gap:0.5rem; transition:0.3s;">
             <svg id="likeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             <span id="likeCount">0</span> Beğeni
+        </button>
+        <button id="btnListen" class="btn btn-outline" style="border-color:var(--gold); color:var(--gold); display:flex; align-items:center; gap:0.5rem; transition:0.3s;" onclick="sesliOku()">
+            <svg id="listenIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            <span id="listenText">Şiiri Dinle</span>
         </button>
         <button id="btnDownload" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem;" onclick="indirResim()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -130,6 +135,23 @@
         <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom: 1rem;">Bu alan sadece yöneticilere (Admin) görünür.</p>
         <button id="btnSil" class="btn btn-outline" style="border-color:var(--red-accent); color:var(--red-accent); padding: 0.5rem 2rem;">Bu Eseri Kalıcı Olarak Sil</button>
      </div>
+  </div>
+  
+  <!-- YORUMLAR KÖŞESİ -->
+  <div class="comments-section" style="max-width: 800px; margin: 0 auto 4rem; padding: 0 2rem;" id="commentsSectionWrapper">
+      <h3 style="font-family: var(--font-serif); font-size: 2rem; color: var(--gold); border-bottom: 1px solid var(--border-soft); padding-bottom: 1rem; margin-bottom: 2rem;">Edebi Eleştiriler & Yorumlar</h3>
+      
+      <div id="commentsList" style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem;">
+          <p style="color:var(--text-muted); font-style:italic;">Yorumlar yükleniyor...</p>
+      </div>
+      
+      <div id="commentFormContainer" style="background: var(--bg-card); padding: 2rem; border-radius: var(--r); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm);">
+          <p id="commentAuthWarning" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:0;">Yorum yapmak için <a href="auth.html" style="color:var(--gold); text-decoration:underline;">giriş yapmalısınız</a>.</p>
+          <div id="commentInputArea" style="display:none;">
+              <textarea id="commentText" rows="4" placeholder="Eser hakkındaki edebi düşüncelerinizi paylaşın..." style="width: 100%; padding: 1rem; background: var(--bg-body); border: 1px solid var(--border-color); border-radius: var(--r); color: var(--text); font-family: var(--font-sans); margin-bottom: 1rem; resize: vertical;"></textarea>
+              <button class="btn btn-secondary" id="btnSubmitComment" onclick="gonderYorum()">Yorumu Gönder</button>
+          </div>
+      </div>
   </div>
 </div>
 

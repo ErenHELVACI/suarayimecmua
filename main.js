@@ -881,11 +881,14 @@ async function loadEserSayfasi() {
     
     try {
         let docRef;
-        if(id.startsWith("KLASIK")) {
-            docRef = await db.collection("Klasikler").doc(id).get();
-        } else {
-            docRef = await db.collection("Eserler").doc(id).get();
-        }
+        const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
+        const ref = db.collection(colName).doc(id);
+        
+        try {
+            await ref.update({ goruntulenme: firebase.firestore.FieldValue.increment(1) });
+        } catch(e) {}
+        
+        docRef = await ref.get();
         
         if(!docRef.exists) {
             document.getElementById('eTitle').innerText = "Hata 404";
@@ -898,6 +901,9 @@ async function loadEserSayfasi() {
         document.getElementById('eAuthor').innerText = eser.yazar;
         document.getElementById('eText').innerHTML = eser.metin;
         document.getElementById('eCode').innerText = id;
+        
+        const viewEl = document.getElementById('viewCountText');
+        if(viewEl) viewEl.innerText = (eser.goruntulenme || 1);
         
         if(eser.tarih && eser.tarih.toDate) {
             document.getElementById('eDate').innerText = eser.tarih.toDate().toLocaleDateString('tr-TR');
@@ -948,6 +954,23 @@ async function loadEserSayfasi() {
         
         // Yetki kontrolü (Silme işlemi için)
         checkAdminSil(id, eser);
+        
+        // Yorumları Yükle
+        yukleYorumlar(colName, id);
+        
+        auth.onAuthStateChanged(user => {
+            const warn = document.getElementById('commentAuthWarning');
+            const inp = document.getElementById('commentInputArea');
+            if(warn && inp) {
+                if(user) {
+                    warn.style.display = 'none';
+                    inp.style.display = 'block';
+                } else {
+                    warn.style.display = 'block';
+                    inp.style.display = 'none';
+                }
+            }
+        });
         
     } catch(err) {
         console.error("Eser yüklenirken hata:", err);
@@ -1054,4 +1077,121 @@ function indirResim() {
         if(btnContainer) btnContainer.style.display = 'flex';
         if(adminGorunurMu) adminContainer.style.display = 'block';
     });
+}
+
+// --- ŞİİR SESLENDİRME (Text-to-Speech) ---
+function sesliOku() {
+    const textHtml = document.getElementById('eText').innerHTML;
+    const plainText = textHtml.replace(/<br\s*[\/]?>/gi, " ").replace(/<[^>]+>/g, '');
+    
+    if ('speechSynthesis' in window) {
+        const synth = window.speechSynthesis;
+        const btnText = document.getElementById('listenText');
+        const icon = document.getElementById('listenIcon');
+        
+        if(synth.speaking) {
+            synth.cancel();
+            btnText.innerText = "Şiiri Dinle";
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+            return;
+        }
+
+        const utterThis = new SpeechSynthesisUtterance(plainText);
+        utterThis.lang = 'tr-TR';
+        utterThis.rate = 0.85;
+        utterThis.pitch = 0.9; 
+
+        utterThis.onstart = () => {
+            btnText.innerText = "Dinlemeyi Durdur";
+            icon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+            showToast('Seslendirme', 'Şiir okunuyor...', 'success');
+        };
+        
+        utterThis.onend = () => {
+            btnText.innerText = "Şiiri Dinle";
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+        };
+
+        synth.speak(utterThis);
+    } else {
+        showToast('Desteklenmiyor', 'Tarayıcınız sesli okumayı desteklemiyor.', 'error');
+    }
+}
+
+// --- YORUM SİSTEMİ ---
+async function yukleYorumlar(colName, eserId) {
+    const list = document.getElementById('commentsList');
+    if(!list) return;
+
+    try {
+        const snapshot = await db.collection(colName).doc(eserId).collection("Yorumlar").orderBy("tarih", "desc").get();
+        if(snapshot.empty) {
+            list.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Henüz yorum yapılmamış. İlk değerlendirmeyi siz yapın.</p>';
+            return;
+        }
+
+        list.innerHTML = '';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const div = document.createElement('div');
+            div.style.padding = "1.5rem";
+            div.style.borderLeft = "2px solid var(--gold)";
+            div.style.background = "var(--bg-color-alt)";
+            div.style.borderRadius = "0 var(--r) var(--r) 0";
+            
+            const tarihStr = data.tarih && data.tarih.toDate ? data.tarih.toDate().toLocaleDateString('tr-TR') : '';
+            
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; align-items:center;">
+                    <strong style="color:var(--gold-dark); font-size:1.1rem;">${data.yazar}</strong>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">${tarihStr}</span>
+                </div>
+                <p style="color:var(--text-soft); line-height:1.6;">${data.metin.replace(/\\n/g, '<br>')}</p>
+            `;
+            list.appendChild(div);
+        });
+    } catch(err) {
+        list.innerHTML = '<p style="color:var(--red-accent);">Yorumlar yüklenirken bir hata oluştu.</p>';
+    }
+}
+
+async function gonderYorum() {
+    const text = document.getElementById('commentText').value.trim();
+    if(!text) {
+        showToast('Hata', 'Yorum boş olamaz.', 'error');
+        return;
+    }
+
+    const user = auth.currentUser;
+    if(!user) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
+    
+    const btn = document.getElementById('btnSubmitComment');
+    btn.disabled = true;
+    btn.innerText = "Gönderiliyor...";
+
+    try {
+        const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
+        let isim = "İsimsiz Okur";
+        if(userDoc.exists) isim = userDoc.data().isim || isim;
+
+        await db.collection(colName).doc(id).collection("Yorumlar").add({
+            uid: user.uid,
+            yazar: isim,
+            metin: text,
+            tarih: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showToast('Başarılı', 'Yorumunuz eklendi!', 'success');
+        document.getElementById('commentText').value = '';
+        yukleYorumlar(colName, id);
+    } catch(err) {
+        showToast('Hata', 'Yorum gönderilirken hata oluştu.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Yorumu Gönder";
+    }
 }
