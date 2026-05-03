@@ -1046,3 +1046,138 @@ img { display: block; max-width: 100%; }
   100% { transform: scale(1); opacity: 0.5; }
 }
 .ai-pulse { animation: pulse 2s infinite; }
+/* ---- ZEN MODU ---- */
+.zen-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-color); /* Mevcut temaya göre renk alır */
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease, background 0.5s ease;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    color: var(--text-main);
+    padding: 6rem 2rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.zen-overlay::-webkit-scrollbar {
+    display: none;
+}
+.zen-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.zen-particles {
+    position: fixed; /* İçerik kaysa bile parçacıklar ekranda sabit kalsın */
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.6; /* Temaya göre çok patlamasın */
+}
+.zen-close {
+    position: fixed;
+    top: 2rem; right: 2rem;
+    background: var(--bg-color-alt);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--r);
+    cursor: pointer;
+    z-index: 1001;
+    transition: 0.3s;
+}
+.zen-close:hover {
+    background: var(--gold);
+    color: var(--bg-color);
+}
+.zen-content {
+    max-width: 850px;
+    width: 100%;
+    text-align: center;
+    animation: zenFadeUp 1.5s ease-out;
+    padding-bottom: 5rem;
+}
+@keyframes zenFadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: none; }
+}
+.zen-content h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+.zen-content p {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    margin-bottom: 4rem;
+    text-transform: uppercase;
+}
+.zen-content #zenText {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    line-height: 2.2;
+    font-style: italic;
+    color: var(--text-soft); /* Temaya uyumlu yumuşak metin rengi */
+}
+
+/* Zen Particle Animation */
+.zen-particle {
+    position: absolute;
+    background: var(--gold);
+    border-radius: 50%;
+    opacity: 0.5; /* Daha belirgin */
+    animation: floatZen 20s infinite linear;
+    box-shadow: 0 0 10px var(--gold-light); /* Parlama efekti */
+}
+@keyframes floatZen {
+    0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.6; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* ---- SCROLL TO TOP ---- */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+}
+
+.scroll-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-top-btn:not(.visible) {
+    transform: translateY(20px);
+}
+
+.scroll-top-btn:hover {
+    background: var(--gold-dark);
+    transform: scale(1.1) translateY(-5px);
+}
+
+

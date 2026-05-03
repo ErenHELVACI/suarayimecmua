@@ -143,7 +143,11 @@
         </button>
         <button id="btnDownload" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem;" onclick="indirResim()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Resim Olarak İndir
+            Resim İndir
+        </button>
+        <button id="btnZen" class="btn btn-secondary" style="display:flex; align-items:center; gap:0.5rem;" onclick="toggleZenMode()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+            Odak Modu
         </button>
       </div>
 
@@ -172,6 +176,19 @@
   </div>
 </div>
 
+<!-- ZEN MODU OVERLAY -->
+<div id="zenOverlay" class="zen-overlay">
+    <div class="zen-particles" id="zenParticles"></div>
+    <button class="zen-close" onclick="toggleZenMode()">&times; Kapat</button>
+    <div class="zen-content">
+        <h2 id="zenTitle"></h2>
+        <p id="zenAuthor"></p>
+        <div id="zenText"></div>
+    </div>
+</div>
+
+<!-- LUGAT TOOLTIP KALDIRILDI -->
+
 <footer class="footer">
   <div class="container">
     <div class="footer-bottom">
@@ -180,10 +197,15 @@
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="main.js"></script>
+  <!-- SCROLL TO TOP -->
+  <button id="scrollToTop" class="scroll-top-btn" onclick="scrollToTop()" title="Yukarı Çık">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  </button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

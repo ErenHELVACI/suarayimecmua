@@ -287,6 +287,9 @@ async function yukleProfil(user) {
                 pRole.innerText = "Yönetici (Admin)";
                 pRole.style.color = "var(--gold)";
                 if(adminPanel) adminPanel.style.display = "block";
+                const navYonet = document.getElementById('nav-yonet');
+                if(navYonet) navYonet.style.display = "flex";
+                yukleYonetimPaneli();
             }
         } else {
             pName.innerText = "Misafir Yazar";
@@ -1753,3 +1756,168 @@ async function yukleIstatistikler() {
         console.error("İstatistikler yüklenirken hata:", err);
     }
 }
+
+// --- ADMİN YÖNETİM PANELİ İŞLEVLERİ ---
+async function yukleYonetimPaneli() {
+    const listDiv = document.getElementById('managePoetsList');
+    if(!listDiv) return;
+
+    listDiv.innerHTML = '<p style="color:var(--text-muted);">Şairler listeleniyor...</p>';
+
+    try {
+        // Klasikler koleksiyonundaki benzersiz şairleri bul
+        const snapshot = await db.collection("Klasikler").get();
+        const sairler = new Set();
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(data.yazar) sairler.add(data.yazar);
+        });
+
+        listDiv.innerHTML = '';
+        if(sairler.size === 0) {
+            listDiv.innerHTML = '<p style="color:var(--text-muted);">Sistemde kayıtlı şair bulunamadı.</p>';
+            return;
+        }
+
+        Array.from(sairler).sort().forEach(sair => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-outline';
+            btn.style.padding = '1rem';
+            btn.style.textAlign = 'left';
+            btn.style.justifyContent = 'flex-start';
+            btn.style.fontSize = '0.9rem';
+            btn.innerText = sair;
+            btn.onclick = () => yukleSairDetay(sair);
+            listDiv.appendChild(btn);
+        });
+
+    } catch(err) {
+        console.error("Yönetim paneli yükleme hatası:", err);
+    }
+}
+
+async function yukleSairDetay(sairAdi) {
+    const detailView = document.getElementById('poetDetailView');
+    const nameEl = document.getElementById('selectedPoetName');
+    const listEl = document.getElementById('poetPoemsList');
+    const btnDeleteAll = document.getElementById('btnDeletePoetEntirely');
+
+    if(!detailView || !nameEl || !listEl) return;
+
+    detailView.style.display = 'block';
+    nameEl.innerText = sairAdi;
+    listEl.innerHTML = '<p style="color:var(--text-muted);">Şiirler getiriliyor...</p>';
+
+    try {
+        const snapshot = await db.collection("Klasikler").where("yazar", "==", sairAdi).get();
+        listEl.innerHTML = '';
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const id = doc.id;
+
+            const item = document.createElement('div');
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.alignItems = 'center';
+            item.style.padding = '1rem';
+            item.style.background = 'var(--bg-color)';
+            item.style.borderRadius = 'var(--r)';
+            item.style.border = '1px solid var(--border-soft)';
+
+            item.innerHTML = `
+                <div>
+                    <strong style="color:var(--text-main);">${data.baslik}</strong>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">ID: ${id}</p>
+                </div>
+                <button class="btn btn-outline" style="border-color:var(--red-accent); color:var(--red-accent); padding:0.4rem 0.8rem; font-size:0.75rem;" onclick="silSiir('Klasikler', '${id}', '${sairAdi}')">Sil</button>
+            `;
+            listEl.appendChild(item);
+        });
+
+        btnDeleteAll.onclick = () => silSairiTamamen('Klasikler', sairAdi);
+
+    } catch(err) {
+        showToast('Hata', 'Şiirler yüklenemedi.', 'error');
+    }
+}
+
+async function silSiir(col, id, sairAdi) {
+    if(!confirm("Bu eseri silmek istediğinize emin misiniz?")) return;
+
+    try {
+        await db.collection(col).doc(id).delete();
+        showToast('Başarılı', 'Eser silindi.', 'success');
+        yukleSairDetay(sairAdi); // Listeyi yenile
+    } catch(err) {
+        showToast('Hata', 'Eser silinemedi.', 'error');
+    }
+}
+
+// --- ZEN MODU SİSTEMİ ---
+
+function toggleZenMode() {
+    const overlay = document.getElementById('zenOverlay');
+    const title = document.getElementById('eTitle').innerText;
+    const author = document.getElementById('eAuthor').innerText;
+    const text = document.getElementById('eText').innerHTML;
+
+    if (!overlay) return;
+
+    if (overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        document.getElementById('zenTitle').innerText = title;
+        document.getElementById('zenAuthor').innerText = author;
+        document.getElementById('zenText').innerHTML = text;
+        
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        initZenParticles();
+    }
+}
+
+function initZenParticles() {
+    const container = document.getElementById('zenParticles');
+    if (!container || container.children.length > 0) return;
+
+    for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'zen-particle';
+        
+        const size = Math.random() * 3 + 1;
+        const left = Math.random() * 100;
+        const delay = -Math.random() * 20; // Negatif delay sayesinde hepsi aynı anda dipten başlamaz, ekrana dağılır
+        const duration = Math.random() * 10 + 15;
+
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${left}%`;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.animationDuration = `${duration}s`;
+        
+        container.appendChild(particle);
+    }
+}
+
+// --- SCROLL TO TOP SİSTEMİ ---
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('scrollToTop');
+    if (btn) {
+        if (window.scrollY > 300) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    }
+});
+
+
