@@ -75,6 +75,52 @@
     text-align: center;
     margin-top: 1rem;
   }
+  .auth-tab {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    transition: var(--trans);
+  }
+  .verify-banner {
+    display: none;
+    background: rgba(212,175,55,0.12);
+    border: 1px solid var(--gold);
+    border-radius: var(--r);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--gold-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .verify-banner svg { flex-shrink: 0; }
+  .verify-banner a { color: var(--gold); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .reset-success {
+    display: none;
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+  }
+  .reset-success svg { color: var(--gold); margin-bottom: 1rem; }
+  .forgot-pass-link {
+    display: block;
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--gold);
+    text-decoration: none;
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    transition: var(--trans);
+  }
+  .forgot-pass-link:hover {
+    color: var(--gold-dark);
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -117,10 +163,17 @@
       <div class="auth-tab" id="tabKayit" onclick="switchAuthTab('kayit')">Kayıt Ol</div>
     </div>
 
+    <!-- E-POSTA DOĞRULAMA UYARISI -->
+    <div class="verify-banner" id="verifyBanner" style="display:none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <div>E-posta adresiniz henüz doğrulanmamış. <a onclick="tekrarGonder()">Doğrulama e-postasını tekrar gönder</a>.</div>
+    </div>
+
     <!-- GİRİŞ FORMU -->
     <form id="formGiris" class="auth-form active" onsubmit="girisYap(event)">
       <input type="email" id="loginEmail" placeholder="E-Posta Adresiniz" required>
       <input type="password" id="loginPass" placeholder="Şifreniz" required>
+      <a class="forgot-pass-link" onclick="switchAuthTab('reset')">Şifremi unuttum?</a>
       <button type="submit" class="btn btn-primary" id="btnLogin">Sisteme Gir</button>
     </form>
 
@@ -132,6 +185,21 @@
       <button type="submit" class="btn btn-secondary" id="btnReg">Hesap Oluştur</button>
       <p class="verification-note">Kayıt olduktan sonra e-posta adresinize bir doğrulama maili gönderilecektir.</p>
     </form>
+
+    <!-- ŞİFREMİ UNUTTUM FORMU -->
+    <div id="formReset" class="auth-form">
+      <div class="reset-success" id="resetSuccess" style="display:none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <h3 style="font-family:var(--font-serif); color:var(--gold); margin:0.5rem 0;">E-Posta Gönderildi!</h3>
+        <p>Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Lütfen gelen kutunuzu kontrol edin.</p>
+        <button class="btn btn-outline" style="margin-top:1rem; border-color:var(--gold); color:var(--gold);" onclick="switchAuthTab('giris')">Giriş Sayfasına Dön</button>
+      </div>
+      <div id="resetFormInner">
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem; line-height:1.6;">Kayıtlı e-posta adresinizi girin. Size şifre sıfırlama bağlantısı göndereceğiz.</p>
+        <input type="email" id="resetEmail" placeholder="Kayıtlı E-Posta Adresiniz" required style="width:100%; padding:1rem; background:var(--bg-body); border:1px solid var(--border-color); border-radius:var(--r); color:var(--text); font-family:var(--font-sans); margin-bottom:1.5rem;">
+        <button class="btn btn-secondary" id="btnReset" style="width:100%;" onclick="sifreSifirla()">Sıfırlama Bağlantısı Gönder</button>
+      </div>
+    </div>
   </div>
 </section>
 

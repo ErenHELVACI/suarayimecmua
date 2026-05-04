@@ -191,6 +191,197 @@ function cikisYap(event) {
     });
 }
 
+// ==========================================================
+// 🔒 GÜVENLİK & PLATFORM SAĞLIĞI
+// ==========================================================
+
+// --- 1. ŞİFREMİ UNUTTUM ---
+// auth.html üzerindeki "Şifremi Unuttum" formu için tab geçişini genişlet
+const _origSwitchAuthTab = typeof switchAuthTab === 'function' ? switchAuthTab : null;
+function switchAuthTab(tab) {
+    const allTabs  = document.querySelectorAll('.auth-tab');
+    const allForms = document.querySelectorAll('.auth-form');
+    allTabs.forEach(t  => t.classList.remove('active'));
+    allForms.forEach(f => f.classList.remove('active'));
+
+    const tabMap = { giris: 'tabGiris', kayit: 'tabKayit', reset: 'tabReset' };
+    const formMap = { giris: 'formGiris', kayit: 'formKayit', reset: 'formReset' };
+
+    const tabEl  = document.getElementById(tabMap[tab]);
+    const formEl = document.getElementById(formMap[tab]);
+    if (tabEl)  tabEl.classList.add('active');
+    if (formEl) formEl.classList.add('active');
+
+    // Şifremi unuttum formuna geçince success ekranını gizle
+    if (tab === 'reset') {
+        const s = document.getElementById('resetSuccess');
+        const f = document.getElementById('resetFormInner');
+        if (s) s.style.display = 'none';
+        if (f) f.style.display = 'block';
+    }
+
+    // Banner'ı gizle (her tab geçişinde)
+    const banner = document.getElementById('verifyBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+async function sifreSifirla() {
+    const emailInput = document.getElementById('resetEmail');
+    const btn        = document.getElementById('btnReset');
+    const email      = emailInput ? emailInput.value.trim() : '';
+
+    if (!email) {
+        showToast('Uyarı', 'Lütfen e-posta adresinizi girin.', 'error');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'Gönderiliyor...';
+
+    try {
+        await auth.sendPasswordResetEmail(email);
+        // Formu gizle, başarı ekranını göster
+        const formInner    = document.getElementById('resetFormInner');
+        const resetSuccess = document.getElementById('resetSuccess');
+        if (formInner)    formInner.style.display    = 'none';
+        if (resetSuccess) resetSuccess.style.display = 'block';
+    } catch (err) {
+        let msg = 'Bu e-posta adresi sistemde kayıtlı değil.';
+        if (err.code === 'auth/invalid-email') msg = 'Geçersiz e-posta formatı.';
+        showToast('Hata', msg, 'error');
+        btn.disabled  = false;
+        btn.innerText = 'Sıfırlama Bağlantısı Gönder';
+    }
+}
+
+// --- 2. E-POSTA DOĞRULAMA ---
+// girisYap'ı doğrulama kontrolüyle güçlendir
+const _origGirisYap = typeof girisYap === 'function' ? girisYap : null;
+async function girisYap(event) {
+    event.preventDefault();
+    const btn   = document.getElementById('btnLogin');
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+
+    btn.innerHTML = 'Giriş Yapılıyor...';
+    btn.disabled  = true;
+
+    try {
+        const credential = await auth.signInWithEmailAndPassword(email, pass);
+        const user = credential.user;
+
+        if (!user.emailVerified) {
+            // Doğrulama banner'ını göster, kullanıcıyı çıkar
+            const banner = document.getElementById('verifyBanner');
+            if (banner) banner.style.display = 'flex';
+            showToast('E-Posta Doğrulanmamış', 'Lütfen e-postanızdaki doğrulama bağlantısına tıklayın.', 'error');
+            await auth.signOut();
+            btn.innerHTML = 'Sisteme Gir';
+            btn.disabled  = false;
+            return;
+        }
+
+        showToast('Hoş Geldiniz', 'Başarıyla giriş yapıldı.', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    } catch (err) {
+        btn.innerHTML = 'Sisteme Gir';
+        btn.disabled  = false;
+        showToast('Hata', 'E-posta veya şifre hatalı!', 'error');
+    }
+}
+
+async function tekrarGonder() {
+    const user = auth.currentUser;
+    // Kullanıcı çıkış yaptığından, yeni giriş yaptırmadan e-posta gönderemeyiz.
+    // Bunun yerine giris alanından e-postayı al ve signIn → verify → signOut yap.
+    const emailInput = document.getElementById('loginEmail');
+    const passInput  = document.getElementById('loginPass');
+    if (!emailInput || !passInput) { showToast('Uyarı', 'Lütfen e-posta ve şifrenizi girin.', 'error'); return; }
+
+    try {
+        const cred = await auth.signInWithEmailAndPassword(emailInput.value.trim(), passInput.value);
+        await cred.user.sendEmailVerification();
+        await auth.signOut();
+        showToast('Gönderildi', 'Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu kontrol edin.', 'success');
+    } catch (err) {
+        showToast('Hata', 'Doğrulama e-postası gönderilemedi. Lütfen giriş bilgilerinizi kontrol edin.', 'error');
+    }
+}
+
+// --- 3. İÇERİK ŞİKAYET SİSTEMİ ---
+let _sikayetEserId = null;
+
+function sikayetModalAc() {
+    // Sayfa URL'sinden eser ID'sini al
+    const params = new URLSearchParams(window.location.search);
+    _sikayetEserId = params.get('id') || null;
+
+    const overlay = document.getElementById('sikayetModalOverlay');
+    if (overlay) overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Giriş kontrolü: giriş yapılmamışsa uyarı göster, butonu disable et
+    const loginWarn = document.getElementById('sikayetLoginWarn');
+    const btnGonder = document.getElementById('btnGonderSikayet');
+    if (!auth.currentUser) {
+        if (loginWarn) loginWarn.style.display = 'block';
+        if (btnGonder) btnGonder.disabled = true;
+    } else {
+        if (loginWarn) loginWarn.style.display = 'none';
+        if (btnGonder) btnGonder.disabled = false;
+    }
+}
+
+function sikayetModalKapat(event) {
+    if (event && event.target !== document.getElementById('sikayetModalOverlay')) return;
+    const overlay = document.getElementById('sikayetModalOverlay');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    // Formu sıfırla
+    const sel = document.getElementById('sikayetSebep');
+    const txt = document.getElementById('sikayetAciklama');
+    if (sel) sel.value = '';
+    if (txt) txt.value = '';
+}
+
+async function sikayetGonder() {
+    const user = auth.currentUser;
+    if (!user) {
+        showToast('Giriş Gerekli', 'Şikayet göndermek için giriş yapmalısınız.', 'error');
+        return;
+    }
+
+    const sebep     = document.getElementById('sikayetSebep').value;
+    const aciklama  = document.getElementById('sikayetAciklama').value.trim();
+    const btnGonder = document.getElementById('btnGonderSikayet');
+
+    if (!sebep) {
+        showToast('Uyarı', 'Lütfen bir şikayet sebebi seçin.', 'error');
+        return;
+    }
+
+    btnGonder.disabled  = true;
+    btnGonder.innerText = 'Gönderiliyor...';
+
+    try {
+        await db.collection('Sikayetler').add({
+            eserId:      _sikayetEserId,
+            sikayet:     sebep,
+            aciklama:    aciklama || null,
+            gondetenUid: user.uid,
+            gondetenEmail: user.email,
+            tarih:       firebase.firestore.FieldValue.serverTimestamp(),
+            durum:       'beklemede'   // admin incelemesi için
+        });
+        sikayetModalKapat();
+        showToast('Şikayet Alındı', 'Şikayetiniz ekibimize iletildi. En kısa sürede incelenecektir.', 'success');
+    } catch (err) {
+        showToast('Hata', 'Şikayet gönderilemedi. Lütfen tekrar deneyin.', 'error');
+        btnGonder.disabled  = false;
+        btnGonder.innerText = 'Şikayeti Gönder';
+    }
+}
+
 function switchProfileTab(tabId) {
     // Tüm tab içeriklerini gizle
     const tabs = document.querySelectorAll('.profile-tab-content');
@@ -371,46 +562,88 @@ async function yukleProfil(user) {
         // 3. Eserlerime Gelen Yorumlar
         const commentsDiv = document.getElementById('myRecentComments');
         if (commentsDiv) {
-            commentsDiv.innerHTML = '';
-            let commentFound = false;
+            commentsDiv.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Yorumlar taranıyor...</p>';
+            let commentList = [];
 
             // Kendi eserlerimizin yorumlarını topla
             const commentPromises = mySnapshot.docs.map(async (doc) => {
                 const eser = doc.data();
                 const eserId = doc.id;
-                const cSnapshot = await db.collection("Eserler").doc(eserId).collection("Yorumlar").orderBy("tarih", "desc").limit(3).get();
-
+                const cSnapshot = await db.collection("Eserler").doc(eserId).collection("Yorumlar").get();
+                
                 cSnapshot.forEach(cDoc => {
-                    commentFound = true;
                     const cData = cDoc.data();
-                    const cDiv = document.createElement('div');
-                    cDiv.className = 'reveal active';
-                    cDiv.style.background = 'var(--bg-color-alt)';
-                    cDiv.style.padding = '1.2rem';
-                    cDiv.style.borderRadius = 'var(--r)';
-                    cDiv.style.borderLeft = '4px solid var(--gold)';
-                    cDiv.style.marginBottom = '10px';
-                    cDiv.style.cursor = 'pointer';
-                    cDiv.onclick = () => { window.location.href = 'eser.html?id=' + eserId; };
-
-                    const tarihStr = cData.tarih && cData.tarih.toDate ? cData.tarih.toDate().toLocaleDateString('tr-TR') : '';
-
-                    cDiv.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem; align-items:center;">
-                            <strong style="color:var(--gold-dark);">${cData.yazar}</strong>
-                            <span style="color:var(--text-muted); font-size:0.75rem;">${tarihStr}</span>
-                        </div>
-                        <p style="font-size:0.95rem; color:var(--text-soft); line-height:1.5; margin-bottom:0.5rem;">${cData.metin}</p>
-                        <div style="text-align:right; font-size:0.75rem; color:var(--gold); font-style:italic;">"${eser.baslik}" eserine yapıldı</div>
-                    `;
-                    commentsDiv.appendChild(cDiv);
+                    commentList.push({
+                        ...cData,
+                        eserBaslik: eser.baslik,
+                        eserId: eserId
+                    });
                 });
             });
 
             await Promise.all(commentPromises);
 
-            if (!commentFound) {
-                commentsDiv.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Henüz eserlerinize yorum yapılmamış.</p>';
+            if (commentList.length === 0) {
+                commentsDiv.innerHTML = '<p style="grid-column:1/-1; color:var(--text-muted); font-style:italic;">Henüz eserlerinize yorum yapılmamış.</p>';
+            } else {
+                // Son yorumları tarihe göre sırala
+                commentList.sort((a, b) => (b.tarih?.seconds || 0) - (a.tarih?.seconds || 0));
+
+                const initialCommentCount = 3;
+                const btnMoreC = document.getElementById('btnLoadMoreComments');
+                const btnContC = document.getElementById('moreCommentsBtnContainer');
+
+                const renderC = (start, end) => {
+                    if (start === 0) commentsDiv.innerHTML = '';
+                    for (let i = start; i < end && i < commentList.length; i++) {
+                        const c = commentList[i];
+                        const cDiv = document.createElement('div');
+                        cDiv.className = 'reveal active';
+                        cDiv.style.cssText = `
+                            background: var(--bg-card);
+                            padding: 1.5rem;
+                            border-radius: var(--r-lg);
+                            border: 1px solid var(--border-soft);
+                            box-shadow: var(--shadow-sm);
+                            cursor: pointer;
+                            transition: var(--transition);
+                            position: relative;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        `;
+                        cDiv.onmouseover = () => { cDiv.style.borderColor = 'var(--gold)'; cDiv.style.transform = 'translateY(-3px)'; };
+                        cDiv.onmouseout = () => { cDiv.style.borderColor = 'var(--border-soft)'; cDiv.style.transform = 'translateY(0)'; };
+                        cDiv.onclick = () => { window.location.href = 'eser.html?id=' + c.eserId; };
+
+                        const tarihStr = c.tarih && c.tarih.toDate ? c.tarih.toDate().toLocaleDateString('tr-TR') : 'Yeni';
+                        const metinKisa = c.metin.length > 85 ? c.metin.substring(0, 85) + "..." : c.metin;
+
+                        cDiv.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="color:var(--gold); font-size:0.9rem;">${c.yazar}</strong>
+                                <span style="font-size:0.7rem; color:var(--text-muted);">${tarihStr}</span>
+                            </div>
+                            <p style="font-size:0.9rem; color:var(--text-soft); font-style:italic; line-height:1.4;">"${metinKisa}"</p>
+                            <div style="margin-top:auto; padding-top:8px; border-top:1px solid var(--border-soft); font-size:0.75rem; color:var(--text-muted);">
+                                <span style="color:var(--gold-dark); font-weight:500;">${c.eserBaslik}</span> adlı eserinize
+                            </div>
+                        `;
+                        commentsDiv.appendChild(cDiv);
+                    }
+                };
+
+                renderC(0, initialCommentCount);
+
+                if (commentList.length > initialCommentCount && btnContC) {
+                    btnContC.style.display = 'block';
+                    let currentC = initialCommentCount;
+                    btnMoreC.onclick = () => {
+                        renderC(currentC, currentC + 6);
+                        currentC += 6;
+                        if (currentC >= commentList.length) btnContC.style.display = 'none';
+                    };
+                }
             }
         }
 
@@ -609,7 +842,8 @@ async function renderPoems(filtre = "Tümü") {
     const grid = document.getElementById('poemsGrid');
     if (!grid) return;
 
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Veritabanından Eserler Yükleniyor...</p>';
+    // Veri gelene kadar iskeletleri göster
+    showSkeletons(grid, 6);
 
     try {
         const snapshot = await db.collection("Eserler").orderBy("tarih", "desc").get();
@@ -1090,7 +1324,9 @@ function setupTypewriter() {
 async function renderKlasikler(filtre = "Tümü") {
     const grid = document.getElementById('klasiklerGrid');
     if (!grid) return;
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; padding: 3rem 0;">Ölümsüz eserler veritabanından getiriliyor...</p>';
+
+    // Veri gelene kadar iskeletleri göster
+    showSkeletons(grid, 4);
 
     try {
         const snapshot = await db.collection("Klasikler").get();
@@ -1206,46 +1442,64 @@ async function loadEserSayfasi() {
 
         likeCountEl.innerText = likes.length;
 
-        auth.onAuthStateChanged(user => {
-            if (user && likes.includes(user.uid)) {
-                likeIcon.setAttribute('fill', 'var(--red-accent)');
+        auth.onAuthStateChanged(async (user) => {
+            const btnCert = document.getElementById('btnCertificate');
+            if (user) {
+                // Beğeni ikonu kontrolü
+                if (likes.includes(user.uid)) {
+                    likeIcon.setAttribute('fill', 'var(--red-accent)');
+                }
+
+                // Sertifika yetki kontrolü (Sahip veya Admin)
+                let isAllowed = (eser.sahipUid === user.uid);
+                
+                if (!isAllowed) {
+                    const userDoc = await db.collection("Kullanicilar").doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().rol === 'admin') {
+                        isAllowed = true;
+                    }
+                }
+
+                if (isAllowed && btnCert) {
+                    btnCert.style.display = 'flex';
+                }
             }
 
-            btnLike.onclick = async () => {
-                if (!user) {
-                    showToast('Hata', 'Eserleri beğenmek için giriş yapmalısınız.', 'error');
-                    return;
-                }
-
-                if (btnLike.getAttribute('data-processing') === 'true') return;
-                btnLike.setAttribute('data-processing', 'true');
-                btnLike.style.opacity = '0.7';
-
-                try {
-                    const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
-                    const ref = db.collection(colName).doc(id);
-
-                    // Beğeni işlemini (Like/Unlike) yap
-                    if (likes.includes(user.uid)) {
-                        await ref.set({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) }, { merge: true });
-                        likeIcon.setAttribute('fill', 'none');
-                        // Tekrar kontrol: başkası tıklamış olabilir, yerel listeyi güvenli güncelle
-                        const idx = likes.indexOf(user.uid);
-                        if (idx > -1) likes.splice(idx, 1);
-                    } else {
-                        await ref.set({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) }, { merge: true });
-                        likeIcon.setAttribute('fill', 'var(--red-accent)');
-                        if (!likes.includes(user.uid)) likes.push(user.uid);
+            if (btnLike) {
+                btnLike.onclick = async () => {
+                    if (!user) {
+                        showToast('Hata', 'Eserleri beğenmek için giriş yapmalısınız.', 'error');
+                        return;
                     }
-                    likeCountEl.innerText = likes.length;
-                } catch (err) {
-                    console.error("Beğeni eklenirken hata:", err);
-                    showToast('Hata', 'İşlem başarısız oldu.', 'error');
-                } finally {
-                    btnLike.setAttribute('data-processing', 'false');
-                    btnLike.style.opacity = '1';
-                }
-            };
+
+                    if (btnLike.getAttribute('data-processing') === 'true') return;
+                    btnLike.setAttribute('data-processing', 'true');
+                    btnLike.style.opacity = '0.7';
+
+                    try {
+                        const colName = id.startsWith("KLASIK") ? "Klasikler" : "Eserler";
+                        const ref = db.collection(colName).doc(id);
+
+                        if (likes.includes(user.uid)) {
+                            await ref.set({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) }, { merge: true });
+                            likeIcon.setAttribute('fill', 'none');
+                            const idx = likes.indexOf(user.uid);
+                            if (idx > -1) likes.splice(idx, 1);
+                        } else {
+                            await ref.set({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) }, { merge: true });
+                            likeIcon.setAttribute('fill', 'var(--red-accent)');
+                            if (!likes.includes(user.uid)) likes.push(user.uid);
+                        }
+                        likeCountEl.innerText = likes.length;
+                    } catch (err) {
+                        console.error("Beğeni eklenirken hata:", err);
+                        showToast('Hata', 'İşlem başarısız oldu.', 'error');
+                    } finally {
+                        btnLike.setAttribute('data-processing', 'false');
+                        btnLike.style.opacity = '1';
+                    }
+                };
+            }
         });
 
         // Yetki kontrolü (Silme işlemi için)
@@ -1379,32 +1633,53 @@ function checkAdminSil(eserId, eserData) {
 // --- RESİM OLARAK İNDİR (INSTAGRAM İÇİN) ---
 function indirResim() {
     if (typeof window.html2canvas === 'undefined') {
-        showToast('Hata', 'Görsel motoru yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.', 'error');
+        showToast('Hata', 'Görsel motoru yüklenemedi.', 'error');
         return;
     }
 
     const box = document.getElementById('eserReaderBox');
-    const btnContainer = box.querySelector('.eser-actions');
-    const adminContainer = document.getElementById('adminActionContainer');
-
     if (!box) return;
 
-    showToast('Hazırlanıyor...', 'Eser resme dönüştürülüyor, lütfen bekleyin...', 'success');
+    // Gizlenecek öğeler
+    const nav = document.getElementById('poemNavigation');
+    const date = document.getElementById('eDate');
+    const views = document.getElementById('eViews');
+    const actions = box.querySelector('.eser-actions');
+    const admin = document.getElementById('adminActionContainer');
+    const metaBox = box.querySelector('.eser-reader-meta');
 
-    // Admin/Sil butonunun resim çekilmeden önceki görünürlük durumu
-    const adminGorunurMu = adminContainer && adminContainer.style.display !== 'none';
+    // Geçici marka yazısı oluştur
+    const brandLabel = document.createElement('div');
+    brandLabel.id = 'tempBrandLabel';
+    brandLabel.innerHTML = 'Şuarâ-yı Mecmua';
+    brandLabel.style.cssText = 'font-size: 0.8rem; color: var(--gold-dark); text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 8px; text-align: center; width: 100%;';
 
-    // Resimde butonların çıkmaması için geçici olarak gizle
-    if (btnContainer) btnContainer.style.display = 'none';
-    if (adminContainer) adminContainer.style.display = 'none';
+    showToast('Hazırlanıyor...', 'Görseliniz sanat eserine dönüştürülüyor...', 'success');
 
-    // Rengi sabitle (css variable boşluklarını temizleyerek)
-    const cardColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#ffffff';
-    const bodyColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-body').trim() || '#ffffff';
-    box.style.background = cardColor;
+    // 1. GÖRÜNÜMÜ GEÇİCİ OLARAK DÜZENLE
+    if (nav) nav.style.display = 'none';
+    if (date) date.style.display = 'none';
+    if (views) views.style.display = 'none';
+    if (actions) actions.style.display = 'none';
+    if (admin) admin.style.display = 'none';
+    if (metaBox) {
+        metaBox.style.display = 'flex';
+        metaBox.style.justifyContent = 'center';
+        metaBox.style.alignItems = 'center';
+        metaBox.style.flexDirection = 'column';
+        metaBox.style.borderTop = 'none';
+        metaBox.style.paddingTop = '0';
+        metaBox.prepend(brandLabel);
+    }
+    if (tescilBadge) {
+        tescilBadge.style.margin = '0'; // Varsa kenar paylarını sıfırla
+    }
 
+    // Rengi sabitle
+    const bodyColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-body').trim() || '#121212';
+    
     html2canvas(box, {
-        scale: 2, // 2x yüksek çözünürlük
+        scale: 2,
         useCORS: true,
         backgroundColor: bodyColor,
         logging: false
@@ -1412,21 +1687,101 @@ function indirResim() {
         const link = document.createElement('a');
         link.download = 'suarayimecmua-eser.png';
         link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link); // Firefox ve eski Chrome uyumluluğu
         link.click();
-        document.body.removeChild(link);
 
-        // Butonları resim işlemi bittikten sonra eski haline getir
-        if (btnContainer) btnContainer.style.display = 'flex';
-        if (adminGorunurMu) adminContainer.style.display = 'block';
+        // 2. ESKİ HALİNE GERİ GETİR
+        if (nav && document.getElementById('prevPoem').href !== '#') nav.style.display = 'flex';
+        if (date) date.style.display = 'inline';
+        if (views) views.style.display = 'inline';
+        if (actions) actions.style.display = 'flex';
+        if (admin && admin.getAttribute('data-visible') === 'true') admin.style.display = 'block';
+        if (metaBox) {
+            metaBox.style.justifyContent = 'space-between';
+            metaBox.style.flexDirection = 'row';
+            metaBox.style.borderTop = '1px solid var(--border-color)';
+            const temp = document.getElementById('tempBrandLabel');
+            if (temp) temp.remove();
+        }
 
-        showToast('Başarılı', 'Şiir cihazınıza mükemmel kalitede kaydedildi!', 'success');
+        showToast('Başarılı', 'Şiir cihazınıza kaydedildi!', 'success');
     }).catch(err => {
         console.error("Resim oluşturma hatası:", err);
-        showToast('Hata', 'Resim oluşturulamadı. Sorun tarayıcınızdan kaynaklanıyor olabilir.', 'error');
-        if (btnContainer) btnContainer.style.display = 'flex';
-        if (adminGorunurMu) adminContainer.style.display = 'block';
+        showToast('Hata', 'Resim oluşturulamadı.');
+        // Hata olsa bile geri yükle
+        if (nav) nav.style.display = 'flex';
+        if (actions) actions.style.display = 'flex';
+        const temp = document.getElementById('tempBrandLabel');
+        if (temp) temp.remove();
     });
+}
+
+// --- TESCİL SERTİFİKASI OLUŞTUR (HTML -> CANVAS -> PDF) ---
+async function indirSertifika() {
+    const { jsPDF } = window.jspdf;
+    const template = document.getElementById('sertifikaTemplate');
+    if (!template) {
+        showToast('Hata', 'Sertifika şablonu bulunamadı.', 'error');
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const eserId = params.get('id');
+    if (!eserId) return;
+
+    showToast('Hazırlanıyor', 'Dijital sertifikanız mühürleniyor...', 'success');
+
+    try {
+        const colName = eserId.startsWith("KLASIK") ? "Klasikler" : "Eserler";
+        const doc = await db.collection(colName).doc(eserId).get();
+        if (!doc.exists) return;
+        const data = doc.data();
+
+        // 1. Şablonu Verilerle Doldur
+        document.getElementById('certYazar').innerText = data.yazar || "Bilinmiyor";
+        document.getElementById('certKod').innerText = eserId;
+        document.getElementById('certBaslik').innerText = data.baslik || "İsimsiz";
+        const tarih = data.tarih && data.tarih.toDate ? data.tarih.toDate().toLocaleDateString('tr-TR') : '2025';
+        document.getElementById('certTarih').innerText = tarih;
+
+        // 2. QR Kodunu Hazırla
+        const currentURL = window.location.href;
+        const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentURL)}`;
+        const qrImg = document.getElementById('certQR');
+        qrImg.src = qrURL;
+
+        // Resmin yüklenmesini bekle (CORS için crossOrigin ayarı önemli)
+        qrImg.crossOrigin = "anonymous";
+        await new Promise((resolve) => { qrImg.onload = resolve; });
+
+        // 3. HTML'den Canvas Oluştur (Yüksek Kalite İçin Scale: 2)
+        const canvas = await html2canvas(template, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#ffffff"
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+
+        // 4. PDF Oluştur ve Görseli Ekle
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const w = pdf.internal.pageSize.getWidth();
+        const h = pdf.internal.pageSize.getHeight();
+
+        pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+        pdf.save(`Tescil_Belgesi_${eserId}.pdf`);
+
+        showToast('Hazır!', 'Tescil belgeniz başarıyla indirildi.', 'success');
+
+    } catch (err) {
+        console.error(err);
+        showToast('Hata', 'Sertifika oluşturulurken bir sorun çıktı.', 'error');
+    }
 }
 
 
@@ -1434,6 +1789,9 @@ function indirResim() {
 async function renderSairler() {
     const grid = document.getElementById('poetsGrid');
     if (!grid) return;
+
+    // Veri gelene kadar iskeletleri göster
+    showPoetSkeletons(grid, 8);
 
     try {
         const snapshot = await db.collection("Klasikler").get();
@@ -1920,4 +2278,57 @@ window.addEventListener('scroll', () => {
     }
 });
 
+// --- YARDIMCI FONKSİYONLAR ---
+function showSkeletons(container, count = 6) {
+    if (!container) return;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-card">
+                <div class="skeleton-tag skeleton"></div>
+                <div class="skeleton-title skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-author">
+                        <div class="skeleton-avatar skeleton"></div>
+                        <div class="skeleton-name skeleton"></div>
+                    </div>
+                    <div class="skeleton-code skeleton"></div>
+                </div>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+}
 
+function showToast(title, msg, type = 'info') {
+    // Basit bir toast simülasyonu (Eğer projede özel bir toast UI varsa ona bağlanabilir)
+    console.log(`[${type.toUpperCase()}] ${title}: ${msg}`);
+    
+    // Eğer bir toast container varsa oraya ekle
+    const toastBox = document.getElementById('toastContainer');
+    if (toastBox) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<strong>${title}</strong><p>${msg}</p>`;
+        toastBox.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+}
+
+
+
+function showPoetSkeletons(container, count = 8) {
+    if (!container) return;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-poet-card">
+                <div class="skeleton-poet-avatar skeleton"></div>
+                <div class="skeleton-poet-name skeleton"></div>
+                <div class="skeleton-poet-desc skeleton"></div>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+}

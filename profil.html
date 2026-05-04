@@ -73,6 +73,10 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             Eserleri Yönet
         </a>
+        <a onclick="cikisYap(event)" class="dashboard-nav-item" style="color:var(--red-accent) !important; font-weight:600; display:flex; align-items:center; gap:0.5rem; text-decoration:none; transition:0.3s; padding-bottom: 1rem; margin-left: auto;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path></svg>
+            Çıkış Yap
+        </a>
     </div>
 
     <!-- TAB 1: PROFİLİM -->
@@ -90,6 +94,15 @@
                 <div class="stat-value" id="totalLikes">0</div>
                 <div class="stat-label">Beğeni Sayısı</div>
             </div>
+        </div>
+
+        <!-- ESERLERİME GELEN SON YORUMLAR -->
+        <h3 style="margin-bottom: 1.5rem;" class="reveal">Eserlerime Gelen Son Yorumlar</h3>
+        <div id="myRecentComments" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;" class="reveal">
+            <p style="color:var(--text-muted); font-style:italic;">Yorumlar taranıyor...</p>
+        </div>
+        <div id="moreCommentsBtnContainer" style="display:none; text-align:center; margin-bottom: 4rem;" class="reveal">
+            <button class="btn btn-outline" id="btnLoadMoreComments" style="padding:0.6rem 2rem; border-color:var(--gold); color:var(--gold);">Daha Fazla Yorum Gör</button>
         </div>
 
         <!-- TESCİLLİ ESERLERİM -->

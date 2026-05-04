@@ -72,6 +72,165 @@
     border-radius: 20px;
     font-weight: 500;
   }
+
+  /* === ŞİKAYET MODALİ === */
+  .sikayet-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  .sikayet-modal-overlay.open {
+    display: flex;
+  }
+  .sikayet-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--shadow);
+    animation: modalSlideIn 0.3s ease;
+    position: relative;
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .sikayet-modal h3 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    color: var(--gold);
+    margin: 0 0 0.5rem;
+  }
+  .sikayet-modal p.sub {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .sikayet-modal select,
+  .sikayet-modal textarea {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+  }
+  .sikayet-modal textarea { resize: vertical; }
+  .sikayet-modal .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+  .sikayet-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0.2rem 0.5rem;
+    transition: color 0.2s;
+  }
+  .sikayet-modal .modal-close:hover { color: var(--text); }
+  .btn-danger {
+    background: rgba(220,50,50,0.15);
+    color: #e05555;
+    border: 1px solid rgba(212,175,55,0.3);
+    padding: 0.55rem 1.4rem;
+    border-radius: var(--r);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-danger:hover { background: rgba(220,50,50,0.28); }
+
+  /* GİZLİ SERTİFİKA TASARIMI */
+  #sertifikaTemplate {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 1000px; /* A4 Landscape oranına yakın */
+    height: 700px;
+    background: #fff;
+    padding: 40px;
+    font-family: 'Cormorant Garamond', serif;
+    color: #222;
+    border: 15px double #d4af37;
+    box-sizing: border-box;
+  }
+  .cert-inner {
+    border: 2px solid #d4af37;
+    height: 100%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    box-sizing: border-box;
+  }
+  .cert-logo { font-size: 50px; color: #d4af37; margin-bottom: 10px; }
+  .cert-title { font-size: 36px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
+  .cert-subtitle { font-size: 18px; font-style: italic; color: #666; margin-bottom: 40px; }
+  .cert-text { font-size: 22px; margin-bottom: 30px; line-height: 1.6; }
+  .cert-info-box {
+    width: 80%;
+    background: #fdfaf0;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    text-align: left;
+    gap: 15px;
+    border: 1px solid #eee;
+  }
+  .cert-info-item b { color: #8a6d3b; display: block; font-size: 14px; text-transform: uppercase; }
+  .cert-info-item span { font-size: 18px; font-weight: 600; }
+  .cert-qr { 
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 100px; 
+    height: 100px; 
+    border: 1px solid #d4af37; 
+    padding: 5px; 
+    background: #fff; 
+  }
+  .cert-seal {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    width: 110px; 
+    height: 110px;
+    border: 3px double #d4af37;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #d4af37;
+    background: rgba(212,175,55,0.03);
+    transform: rotate(-10deg);
+  }
 </style>
 </head>
 <body>
@@ -141,13 +300,21 @@
             <svg id="likeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             <span id="likeCount">0</span> Beğeni
         </button>
-        <button id="btnDownload" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem;" onclick="indirResim()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Resim İndir
+        <button class="btn btn-secondary" style="display:flex; align-items:center; gap:0.5rem;" onclick="indirResim()" title="Resim Olarak İndir">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          Görsel
+        </button>
+        <button id="btnCertificate" class="btn btn-secondary" style="display:none; align-items:center; gap:0.5rem;" onclick="indirSertifika()" title="Tescil Belgesi İndir (PDF)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Sertifika
         </button>
         <button id="btnZen" class="btn btn-secondary" style="display:flex; align-items:center; gap:0.5rem;" onclick="toggleZenMode()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
             Odak Modu
+        </button>
+        <button id="btnReport" class="btn-danger" style="display:flex; align-items:center; gap:0.5rem;" onclick="sikayetModalAc()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Şikayet Et
         </button>
       </div>
 
@@ -189,6 +356,36 @@
 
 <!-- LUGAT TOOLTIP KALDIRILDI -->
 
+<!-- ŞİKAYET MODALİ -->
+<div class="sikayet-modal-overlay" id="sikayetModalOverlay" onclick="sikayetModalKapat(event)">
+  <div class="sikayet-modal" role="dialog" aria-modal="true" aria-labelledby="sikayetTitle">
+    <button class="modal-close" onclick="sikayetModalKapat()" title="Kapat">&times;</button>
+    <h3 id="sikayetTitle">⚠️ İçerik Şikayeti</h3>
+    <p class="sub">Bu eserin telif hakkını ihlal ettiğini veya platformun kullanım koşullarına aykırı olduğunu düşünüyorsanız lütfen şikayet sebebinizi belirtin. Ekibimiz en kısa sürede inceleyecektir.</p>
+
+    <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:0.4rem;">Şikayet Sebebi</label>
+    <select id="sikayetSebep">
+      <option value="">Lütfen bir sebep seçin...</option>
+      <option value="Telif Hakkı İhlali">Telif Hakkı İhlali — Bu eser bana aittir</option>
+      <option value="İzinsiz Kullanım">İzinsiz Kullanım — Başka bir eserin kopyasıdır</option>
+      <option value="Hakaret / Nefret">Hakaret veya Nefret İçeriği</option>
+      <option value="Uygunsuz İçerik">Uygunsuz / Müstehcen İçerik</option>
+      <option value="Spam">Spam veya Anlamsız İçerik</option>
+      <option value="Diğer">Diğer</option>
+    </select>
+
+    <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:0.4rem;">Açıklama (isteğe bağlı)</label>
+    <textarea id="sikayetAciklama" rows="4" placeholder="Şikayetinizi daha ayrıntılı açıklayabilirsiniz..."></textarea>
+
+    <p id="sikayetLoginWarn" style="display:none; font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">⚠️ Şikayet göndermek için <a href="auth.html" style="color:var(--gold);">giriş yapmalısınız</a>.</p>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" style="border-color:var(--border-color); color:var(--text-muted);" onclick="sikayetModalKapat()">Vazgeç</button>
+      <button class="btn-danger" id="btnGonderSikayet" onclick="sikayetGonder()">Şikayeti Gönder</button>
+    </div>
+  </div>
+</div>
+
 <footer class="footer">
   <div class="container">
     <div class="footer-bottom">
@@ -202,10 +399,42 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
   </button>
 
+  <!-- PDF İÇİN GİZLİ ŞABLON -->
+  <div id="sertifikaTemplate">
+    <div class="cert-inner">
+        <div class="cert-logo">شعراء</div>
+        <div class="cert-title">Şuarâ-yı Mecmua</div>
+        <div class="cert-subtitle">Dijital Edebi Eser Tescil Belgesi</div>
+        
+        <div class="cert-text">
+            Bu belge ile aşağıda bilgileri yer alan edebi eserin,<br>
+            Şuarâ-yı Mecmua veritabanında tescil edildiği onaylanmaktadır.
+        </div>
+
+        <div class="cert-info-box">
+            <div class="cert-info-item"><b>Eser Sahibi</b><span id="certYazar">-</span></div>
+            <div class="cert-info-item"><b>Tescil Kodu</b><span id="certKod">-</span></div>
+            <div class="cert-info-item"><b>Eser Başlığı</b><span id="certBaslik">-</span></div>
+            <div class="cert-info-item"><b>Tescil Tarihi</b><span id="certTarih">-</span></div>
+        </div>
+
+        <div style="margin-top: auto; margin-bottom: 20px; font-size: 13px; color: #888; max-width: 400px; line-height: 1.4;">
+            Bu belge Şuarâ-yı Mecmua tarafından dijital olarak üretilmiştir. 
+            QR kod taratılarak sistem üzerinden gerçekliği kontrol edilebilir.
+        </div>
+
+        <div class="cert-seal">RESMİ MÜHÜR<br>ONAYLANDI</div>
+        <img id="certQR" src="" class="cert-qr">
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <!-- PDF Kitaplığı -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
