@@ -1436,7 +1436,29 @@ img { display: block; max-width: 100%; }
   .result-key { min-width: auto; font-size: 0.85rem; }
   .result-val { font-size: 1.1rem; }
   .result-badge-ok { font-size: 0.7rem; width: 100%; text-align: center; }
+
+  /* Ana Sayfa Mobil Fixleri */
+  .tescil-inner { flex-direction: column; text-align: center; gap: 1.5rem; }
+  .tescil-form-group { flex-direction: column; width: 100%; }
+  .tescil-form-group input { border-radius: var(--r); margin-bottom: 0.5rem; }
+  .tescil-form-group button { width: 100%; border-radius: var(--r); padding: 0.8rem; }
+  
+  .steps-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+  .quote-card { transform: none !important; margin-left: 0 !important; margin-right: 0 !important; }
+  
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .footer-brand { grid-column: span 2; text-align: center; }
 }
+
+@media (max-width: 480px) {
+  .logo-tr { display: none; }
+  .hero-title { font-size: 2rem; }
+  .eser-actions { gap: 0.5rem !important; }
+  .hero-actions .btn { width: 100%; }
+  .footer-grid { grid-template-columns: 1fr; text-align: center; }
+  .footer-brand { grid-column: span 1; }
+}
+
 
 
 
