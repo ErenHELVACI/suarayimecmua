@@ -1663,16 +1663,10 @@ function indirResim() {
     if (actions) actions.style.display = 'none';
     if (admin) admin.style.display = 'none';
     if (metaBox) {
-        metaBox.style.display = 'flex';
         metaBox.style.justifyContent = 'center';
-        metaBox.style.alignItems = 'center';
         metaBox.style.flexDirection = 'column';
         metaBox.style.borderTop = 'none';
-        metaBox.style.paddingTop = '0';
         metaBox.prepend(brandLabel);
-    }
-    if (tescilBadge) {
-        tescilBadge.style.margin = '0'; // Varsa kenar paylarını sıfırla
     }
 
     // Rengi sabitle
@@ -1697,15 +1691,10 @@ function indirResim() {
         if (admin && admin.getAttribute('data-visible') === 'true') admin.style.display = 'block';
         if (metaBox) {
             metaBox.style.justifyContent = 'space-between';
-            metaBox.style.alignItems = 'center';
             metaBox.style.flexDirection = 'row';
             metaBox.style.borderTop = '1px solid var(--border-color)';
-            metaBox.style.paddingTop = '2rem';
             const temp = document.getElementById('tempBrandLabel');
             if (temp) temp.remove();
-        }
-        if (tescilBadge) {
-            tescilBadge.style.margin = ''; // Orijinal haline (CSS'deki haline) döndür
         }
 
         showToast('Başarılı', 'Şiir cihazınıza kaydedildi!', 'success');
