@@ -1,42 +1,33 @@
-const CACHE_NAME = 'suarayi-mecmua-v1';
+const CACHE_NAME = 'suarayi-mecmua-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/main.js',
-  '/auth.html',
-  '/klasikler.html',
-  '/sairler.html',
-  '/kesif.html',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap'
+  'index.html',
+  'style.css',
+  'main.js',
+  'manifest.json'
 ];
 
 // Yükleme sırasında dosyaları önbelleğe al
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
+      // Hata almamak için assets listesini tek tek deniyoruz
+      ASSETS.forEach(asset => {
+        cache.add(asset).catch(err => console.log('Önbellek atlandı:', asset));
+      });
+      return self.skipWaiting();
     })
   );
 });
 
-// Eski önbellekleri temizle
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
-  );
+  event.waitUntil(self.clients.claim());
 });
 
-// İstekleri önce önbellekten, yoksa internetten getir (Stale-while-revalidate stratejisi)
+// İstekleri önce önbellekten, yoksa internetten getir
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
-    })
+    }).catch(() => fetch(event.request))
   );
 });
