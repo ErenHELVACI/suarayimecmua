@@ -1611,7 +1611,7 @@ img { display: block; max-width: 100%; }
 }
 
 /* Global Overflow Fix */
-section, header, footer, nav {
+section, header, footer {
   width: 100% !important;
   overflow-x: hidden !important;
 }
@@ -1620,6 +1620,7 @@ section, header, footer, nav {
   width: 100% !important;
   overflow-x: hidden !important;
 }
+
 
 
 
