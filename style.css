@@ -1166,6 +1166,36 @@ img { display: block; max-width: 100%; }
   100% { transform: scale(1); opacity: 0.5; }
 }
 .ai-pulse { animation: pulse 2s infinite; }
+
+/* ---- ANIMASYONLAR (REVEAL) ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+}
+.reveal.active, .reveal-left.active, .reveal-right.active {
+  opacity: 1 !important;
+  transform: translate(0) !important;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ---- ZEN MODU ---- */
 .zen-overlay {
     position: fixed;

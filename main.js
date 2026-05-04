@@ -1054,6 +1054,7 @@ function setupMobileMenu() {
 // --- SCROLL ANIMATIONS (AOS Alternative) ---
 function initScrollAnimations() {
     const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+    const isMobile = window.innerWidth < 768;
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -1061,10 +1062,14 @@ function initScrollAnimations() {
                 entry.target.classList.add('active');
             }
         });
-    }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+    }, { 
+        threshold: isMobile ? 0.01 : 0.1, 
+        rootMargin: isMobile ? "0px 0px 50px 0px" : "0px 0px -50px 0px" 
+    });
 
     reveals.forEach(el => observer.observe(el));
 }
+
 
 // --- TOAST NOTIFICATIONS ---
 function showToast(title, message, type = 'success') {
