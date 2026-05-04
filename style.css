@@ -836,8 +836,12 @@ img { display: block; max-width: 100%; }
 .filter-row {
   display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;
   padding: 2rem 0; margin-bottom: 3rem;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
+.filter-row::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 .filter-btn {
+  flex-shrink: 0;
   padding: 0.6rem 1.5rem;
   background: var(--card-bg); border: 1px solid var(--border);
   border-radius: 999px;
@@ -1377,5 +1381,31 @@ img { display: block; max-width: 100%; }
   .hero-title { font-size: 2rem; }
   .eser-actions { gap: 0.5rem !important; }
   .hero-actions .btn { width: 100%; }
+
+  /* Keşfet Sayfası Mobil */
+  .search-bar-wrap { 
+    margin-top: 1.5rem; 
+    padding: 0.25rem;
+    border-radius: var(--r-lg);
+  }
+  .search-bar-wrap input { padding: 0.75rem 1rem; font-size: 0.9rem; }
+  .search-bar-wrap button { padding: 0 1.25rem; font-size: 0.85rem; }
+
+  .filter-row {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 1rem 0;
+    margin: 0 -1rem 2rem; /* Kenarlara kadar yayılması için */
+    padding-left: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-btn { padding: 0.5rem 1.25rem; font-size: 0.85rem; }
+  
+  .poems-grid { 
+    grid-template-columns: 1fr !important; 
+    gap: 1.5rem !important; 
+  }
 }
+
 
