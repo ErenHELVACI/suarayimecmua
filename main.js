@@ -1697,10 +1697,15 @@ function indirResim() {
         if (admin && admin.getAttribute('data-visible') === 'true') admin.style.display = 'block';
         if (metaBox) {
             metaBox.style.justifyContent = 'space-between';
+            metaBox.style.alignItems = 'center';
             metaBox.style.flexDirection = 'row';
             metaBox.style.borderTop = '1px solid var(--border-color)';
+            metaBox.style.paddingTop = '2rem';
             const temp = document.getElementById('tempBrandLabel');
             if (temp) temp.remove();
+        }
+        if (tescilBadge) {
+            tescilBadge.style.margin = ''; // Orijinal haline (CSS'deki haline) döndür
         }
 
         showToast('Başarılı', 'Şiir cihazınıza kaydedildi!', 'success');
