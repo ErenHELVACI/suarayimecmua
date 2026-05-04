@@ -1050,19 +1050,7 @@ img { display: block; max-width: 100%; }
 .stat-card:hover { transform: translateY(-5px); border-color: var(--gold-light); box-shadow: var(--shadow-sm); }
 .stat-value { font-family: var(--font-serif); font-size: 2.5rem; color: var(--gold); font-weight: 300; margin-bottom: 0.5rem; }
 .stat-label { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
-@media (max-width: 768px) {
-  .stat-num { font-size: 1.6rem; }
-  .stat-label { font-size: 0.65rem; }
-  
-  .page-hero { padding: 6rem 0 3rem; }
-  .page-hero h1 { font-size: 2.2rem; }
-  .neden-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-  .quote-card { padding: 1.5rem; }
-  
-  .comments-section { padding: 0 1rem; }
-}
-
-/* ---- PAGE HERO ---- */
+/* Hakkinda Page Classes */
 .page-hero {
   background: var(--bg-color-alt);
   padding: 8rem 0 4rem;
@@ -1081,8 +1069,6 @@ img { display: block; max-width: 100%; }
   max-width: 600px;
   margin: 0 auto;
 }
-
-/* ---- NEDEN GRID ---- */
 .neden-grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -1096,6 +1082,7 @@ img { display: block; max-width: 100%; }
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
+
 
 
 @keyframes pulse {
@@ -1127,8 +1114,68 @@ img { display: block; max-width: 100%; }
 }
 .zen-overlay.active {
     opacity: 1;
-    pointer-events: all;
+    container.innerHTML = html;
 }
+
+/* =============================================
+   RESPONSIVE OVERRIDES (MOBILE & TABLET)
+   ============================================= */
+
+@media (max-width: 992px) {
+  :root { --max-w: 100%; }
+  .hero { flex-direction: column; text-align: center; height: auto; min-height: auto; padding-top: 7rem; }
+  .hero-content { order: 1; }
+  .hero-poem { order: 2; margin-top: 2rem; }
+  .hero-desc { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-stats { justify-content: center; border-bottom: 1px solid var(--border-soft); padding-bottom: 2rem; }
+  
+  .steps-grid { grid-template-columns: 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+@media (max-width: 768px) {
+  .nav-inner { padding: 0 1rem; height: 60px; }
+  .logo-tr { font-size: 0.9rem; }
+  .logo-ar { font-size: 1.5rem; }
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; margin-left: 0.5rem; }
+  .theme-toggle { width: 32px; height: 32px; margin-left: auto; }
+  
+  .section { padding: 3rem 0; }
+  .hero-title { font-size: 2.4rem; }
+  
+  .eser-reader { 
+    margin: 4.5rem 0 0; 
+    padding: 1.5rem 1rem; 
+    border: none;
+    border-radius: 0;
+  }
+  .eser-reader-title { font-size: 1.8rem; }
+  .eser-reader-text { font-size: 1.15rem; line-height: 1.8; }
+  
+  .auth-wrapper { padding: 4.5rem 1rem 2rem; }
+  .auth-card { padding: 2rem 1.25rem; border: none; box-shadow: none; background: transparent; }
+  .auth-tab { font-size: 1.1rem; }
+
+  /* Hakkinda Mobile */
+  .page-hero { padding: 6rem 0 3rem; }
+  .page-hero h1 { font-size: 2.2rem; }
+  .neden-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .quote-card { padding: 1.5rem; }
+  
+  .comments-section { padding: 0 1rem; }
+  .stat-num { font-size: 1.6rem; }
+  .stat-label { font-size: 0.65rem; }
+}
+
+@media (max-width: 480px) {
+  .logo-tr { display: none; }
+  .hero-title { font-size: 2rem; }
+  .eser-actions { gap: 0.5rem !important; }
+  .hero-actions .btn { width: 100%; }
+}
+
 .zen-particles {
     position: fixed; /* İçerik kaysa bile parçacıklar ekranda sabit kalsın */
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -1328,4 +1375,3 @@ img { display: block; max-width: 100%; }
   width: 50%;
   height: 16px;
 }
-
