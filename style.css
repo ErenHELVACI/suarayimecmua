@@ -117,7 +117,7 @@ img { display: block; max-width: 100%; }
 .container {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 /* ---- NAV ---- */
@@ -255,11 +255,12 @@ img { display: block; max-width: 100%; }
 /* ---- HERO ---- */
 .hero {
   min-height: 100vh;
-  display: flex; align-items: center;
-  padding: 6rem 2rem 4rem;
+  display: flex; 
+  align-items: center;
+  padding: 8rem 0 4rem;
   max-width: var(--max-w);
   margin: 0 auto;
-  gap: 4rem;
+  gap: 3rem;
   position: relative;
 }
 .hero-bg {
@@ -459,11 +460,11 @@ img { display: block; max-width: 100%; }
 
 
 /* ---- SECTION COMMON ---- */
-.section { padding: 8rem 0; position: relative; }
+.section { padding: 5rem 0; position: relative; }
 .section-alt { background: var(--bg-color-alt); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
 
 .section-header {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
   display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
 }
 .section-header-center {
@@ -976,40 +977,57 @@ img { display: block; max-width: 100%; }
   }
 }
 
-@media (max-width: 768px) {
-  :root { --max-w: 540px; }
-  .tescil-inner { flex-direction: column; text-align: center; }
-  .tescil-form-group { flex-direction: column; }
-  .tescil-big-form { flex-direction: column; }
-  .form-row { grid-template-columns: 1fr; }
-  .form-wrap { padding: 2rem; }
-  .result-row { flex-direction: column; gap: 0.25rem; }
-  .toast-container { bottom: 1rem; left: 1rem; right: 1rem; }
-  .toast { min-width: 0; width: 100%; }
+@media (max-width: 992px) {
+  :root { --max-w: 100%; }
+  .hero { flex-direction: column; text-align: center; height: auto; min-height: auto; padding-top: 7rem; }
+  .hero-content { order: 1; }
+  .hero-poem { order: 2; margin-top: 2rem; }
+  .hero-desc { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-stats { justify-content: center; border-bottom: 1px solid var(--border-soft); padding-bottom: 2rem; }
   
-  .section { padding: 5rem 0; }
-  .hero-stats { gap: 1rem; flex-wrap: wrap; }
-  .stat-div { display: none; }
+  .steps-grid { grid-template-columns: 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr; gap: 1rem; }
+}
 
-  .stats-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+@media (max-width: 768px) {
+  .nav-inner { padding: 0 1rem; }
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
+  .theme-toggle { margin-left: auto; }
+  
+  .section { padding: 4rem 0; }
+  .hero-title { font-size: 2.8rem; }
+  
+  .eser-reader { 
+    margin: 6rem auto 2rem; 
+    padding: 2rem 1.5rem; 
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .eser-reader-title { font-size: 2.2rem; }
+  .eser-reader-text { font-size: 1.25rem; line-height: 1.9; margin-bottom: 2rem; }
+  .eser-reader-author { font-size: 1rem; margin-bottom: 2rem; }
+  
+  .poem-card-float { padding: 2rem 1.5rem; }
 }
 
 @media (max-width: 480px) {
-  .steps-grid { grid-template-columns: 1fr; }
-  .footer-grid { grid-template-columns: 1fr; text-align: center; }
   .hero-title { font-size: 2.2rem; }
-  .hero-subtitle { font-size: 0.7rem; }
-  .yazar-name { font-size: 1.8rem !important; }
-  .eser-reader-meta { flex-direction: column; gap: 0.75rem; text-align: center; font-size: 0.85rem !important; }
-  .eser-actions { flex-direction: column; width: 100%; }
-  .eser-actions .btn { width: 100%; }
-  .eser-reader-text { 
-    font-size: 1.0rem !important; 
-    line-height: 1.6 !important;
-    padding-left: 0 !important;
-    border-left: none !important;
-  }
+  .hero-subtitle { font-size: 0.75rem; }
+  .hero-actions .btn { width: 100%; }
+  
+  .eser-actions { flex-direction: column; width: 100%; gap: 0.75rem !important; }
+  .eser-actions .btn { width: 100%; justify-content: center; }
+  
+  .stat-num { font-size: 1.6rem; }
+  .stat-label { font-size: 0.65rem; }
+  
+  .comments-section { padding: 0 1rem; }
+  .sikayet-modal { padding: 1.5rem; }
 }
+
 
 /* Poem Reader Navigation */
 .nav-link-btn {
