@@ -137,7 +137,7 @@ img { display: block; max-width: 100%; }
   max-width: var(--max-w);
   margin: 0 auto; padding: 0 2rem;
   height: 72px;
-  display: flex; align-items: center; gap: 2rem;
+  display: flex; align-items: center; justify-content: space-between;
   transition: height 0.3s ease;
 }
 .nav.scrolled .nav-inner { height: 60px; }
@@ -991,41 +991,34 @@ img { display: block; max-width: 100%; }
 }
 
 @media (max-width: 768px) {
-  .nav-inner { padding: 0 1rem; }
+  .nav-inner { padding: 0 1rem; height: 60px; }
+  .logo-tr { font-size: 0.9rem; } /* Logoyu küçült */
+  .logo-ar { font-size: 1.5rem; }
   .nav-links { display: none; }
-  .nav-toggle { display: flex; }
-  .theme-toggle { margin-left: auto; }
+  .nav-toggle { display: flex; margin-left: 0.5rem; }
+  .theme-toggle { width: 32px; height: 32px; margin-left: auto; }
   
-  .section { padding: 4rem 0; }
-  .hero-title { font-size: 2.8rem; }
+  .section { padding: 3rem 0; }
+  .hero-title { font-size: 2.4rem; }
   
   .eser-reader { 
-    margin: 6rem auto 2rem; 
-    padding: 2rem 1.5rem; 
+    margin: 4.5rem 0 0; /* Navigasyon altına yapıştır */
+    padding: 1.5rem 1rem; 
+    border: none;
     border-radius: 0;
-    border-left: none;
-    border-right: none;
   }
-  .eser-reader-title { font-size: 2.2rem; }
-  .eser-reader-text { font-size: 1.25rem; line-height: 1.9; margin-bottom: 2rem; }
-  .eser-reader-author { font-size: 1rem; margin-bottom: 2rem; }
+  .eser-reader-title { font-size: 1.8rem; }
+  .eser-reader-text { font-size: 1.15rem; line-height: 1.8; }
   
-  .poem-card-float { padding: 2rem 1.5rem; }
+  .auth-wrapper { padding: 4.5rem 1rem 2rem; }
+  .auth-card { padding: 2rem 1.25rem; border: none; box-shadow: none; background: transparent; }
+  .auth-tab { font-size: 1.1rem; }
 }
 
 @media (max-width: 480px) {
-  .hero-title { font-size: 2.2rem; }
-  .hero-subtitle { font-size: 0.75rem; }
-  .hero-actions .btn { width: 100%; }
-  
-  .eser-actions { flex-direction: column; width: 100%; gap: 0.75rem !important; }
-  .eser-actions .btn { width: 100%; justify-content: center; }
-  
-  .stat-num { font-size: 1.6rem; }
-  .stat-label { font-size: 0.65rem; }
-  
-  .comments-section { padding: 0 1rem; }
-  .sikayet-modal { padding: 1.5rem; }
+  .logo-tr { display: none; } /* En küçük ekranda sadece Arapça logo kalsın */
+  .hero-title { font-size: 2rem; }
+  .eser-actions { gap: 0.5rem !important; }
 }
 
 
