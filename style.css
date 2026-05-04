@@ -1406,6 +1406,37 @@ img { display: block; max-width: 100%; }
     grid-template-columns: 1fr !important; 
     gap: 1.5rem !important; 
   }
+
+  /* Tescil Sayfası Mobil */
+  .tescil-big-form { 
+    flex-direction: column; 
+    padding: 1rem; 
+    background: transparent; 
+    border: none; 
+    box-shadow: none; 
+    gap: 1rem;
+  }
+  .tescil-big-form input { 
+    font-size: 1rem; 
+    text-align: center; 
+    padding: 1.2rem;
+  }
+  .tescil-big-form button { 
+    padding: 1.2rem; 
+    width: 100%;
+  }
+
+  .tescil-result-box { padding: 2rem 1.5rem; }
+  .result-title { font-size: 1.5rem; }
+  .result-row { 
+    flex-direction: column; 
+    gap: 0.5rem; 
+    padding: 1.2rem 0;
+  }
+  .result-key { min-width: auto; font-size: 0.85rem; }
+  .result-val { font-size: 1.1rem; }
+  .result-badge-ok { font-size: 0.7rem; width: 100%; text-align: center; }
 }
+
 
 
