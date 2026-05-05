@@ -3,7 +3,9 @@ const ASSETS = [
   'index.html',
   'style.css',
   'main.js',
-  'manifest.json'
+  'manifest.json',
+  'assets/icon-192.png',
+  'assets/icon-512.png'
 ];
 
 // Yükleme sırasında dosyaları önbelleğe al
