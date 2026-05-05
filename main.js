@@ -883,15 +883,20 @@ async function renderPoems(filtre = "Tümü") {
     const grid = document.getElementById('poemsGrid');
     if (!grid) return;
 
+    // Filtre ismini temizleyelim
+    filtre = filtre.trim();
+
     // Veri gelene kadar iskeletleri göster
     showSkeletons(grid, 6);
 
     try {
-        const snapshot = await db.collection("Eserler").orderBy("tarih", "desc").get();
+        // Tarih sıralamasını daha esnek hale getirelim (tarih yoksa da gelsinler diye)
+        // Önce tüm eserleri çekelim, sıralamayı JS tarafında yapalım (Performans için küçük koleksiyonda daha güvenli)
+        const snapshot = await db.collection("Eserler").get();
 
-        // Eğer veritabanı tamamen boşsa, varsayılan (Türk şairler) dizisini veritabanına otomatik yükleyelim (Seed)
+        // Eğer veritabanı tamamen boşsa Seed verilerini yükle
         if (snapshot.empty && turkSiirleri.length > 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--gold); font-size:1.1rem; padding: 3rem 0;">Veritabanı kuruluyor, eserler aktarılıyor...</p>';
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--gold); font-size:1.1rem; padding: 3rem 0;">Veritabanı kuruluyor...</p>';
             const batch = db.batch();
             turkSiirleri.forEach(eser => {
                 const docRef = db.collection("Eserler").doc(eser.id);
@@ -901,26 +906,36 @@ async function renderPoems(filtre = "Tümü") {
                 });
             });
             await batch.commit();
-            turkSiirleri.length = 0; // Bir daha girmemesi için
-            return renderPoems(filtre); // Yeniden çağır
+            turkSiirleri.length = 0;
+            return renderPoems(filtre);
         }
 
-        grid.innerHTML = '';
         const eserler = [];
-        snapshot.forEach(doc => eserler.push(doc.data()));
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id; // ID'yi garantiye alalım
+            eserler.push(data);
+        });
 
-        const filtrelenmis = filtre === "Tümü" ? eserler : eserler.filter(e => e.tur === filtre);
+        // Tarihe göre sıralama (JS tarafında, hata riskini sıfıra indirmek için)
+        eserler.sort((a, b) => {
+            const dateA = a.tarih ? (a.tarih.seconds || 0) : 0;
+            const dateB = b.tarih ? (b.tarih.seconds || 0) : 0;
+            return dateB - dateA;
+        });
 
+        const filtrelenmis = (filtre === "Tümü" || !filtre) ? eserler : eserler.filter(e => e.tur === filtre);
+
+        grid.innerHTML = '';
         if (filtrelenmis.length === 0) {
             grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted); font-size:1.1rem; font-style:italic; padding: 3rem 0;">Bu kategoride henüz eser tescillenmedi.</p>';
             return;
         }
 
         filtrelenmis.forEach((eser, index) => {
-            const gecikme = index * 0.1;
-
-            let kisaMetin = eser.metin;
-            const misralar = eser.metin.split('<br>');
+            const gecikme = index * 0.05;
+            let kisaMetin = eser.metin || "";
+            const misralar = kisaMetin.split('<br>');
             if (misralar.length > 4) {
                 kisaMetin = misralar.slice(0, 4).join('<br>') + '<br><span style="color:var(--gold); font-style:italic; font-size:0.9rem;">...devamını oku</span>';
             }
@@ -929,15 +944,15 @@ async function renderPoems(filtre = "Tümü") {
             card.className = 'poem-card reveal active';
             card.style.transitionDelay = gecikme + 's';
             card.style.cursor = 'pointer';
-            card.onclick = () => { window.location.href = 'eser.html?id=' + eser.id; };
+            card.onclick = () => { window.location.href = 'eser.html?id=' + (eser.id || eser.baslik); };
 
             card.innerHTML = `
-                <div class="poem-card-tag">${eser.tur}</div>
-                <h3 class="poem-card-title">${eser.baslik}</h3>
+                <div class="poem-card-tag">${eser.tur || 'Eser'}</div>
+                <h3 class="poem-card-title">${eser.baslik || 'Başlıksız'}</h3>
                 <div class="poem-excerpt"><p>${kisaMetin}</p></div>
                 <div class="poem-card-footer">
-                  <div class="poem-card-author"><div class="author-avatar">${eser.kisaltma || eser.yazar.charAt(0).toUpperCase()}</div><span>${eser.yazar}</span></div>
-                  <span class="poem-card-code">${eser.id}</span>
+                  <div class="poem-card-author"><div class="author-avatar">${eser.yazar ? eser.yazar.charAt(0).toUpperCase() : '?'}</div><span>${eser.yazar || 'Bilinmiyor'}</span></div>
+                  <span class="poem-card-code">${eser.id || ''}</span>
                 </div>
             `;
             grid.appendChild(card);
