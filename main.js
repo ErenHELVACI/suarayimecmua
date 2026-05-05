@@ -104,6 +104,12 @@ function initAuth() {
             if (window.location.pathname.includes('profil.html')) {
                 yukleProfil(user);
             }
+
+            // Eser paylaşım sayfasında e-posta önizlemesini güncelle
+            const ep = document.getElementById('emailPreview');
+            if (ep) {
+                ep.innerText = `Tescil Onayı ${user.email} Adresine Gönderilecek`;
+            }
         } else {
             const html = `<a href="auth.html" class="btn btn-primary" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem;">Giriş / Kayıt</a>`;
             if (desktop) desktop.innerHTML = html;
