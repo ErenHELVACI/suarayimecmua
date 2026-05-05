@@ -191,6 +191,36 @@ function cikisYap(event) {
     });
 }
 
+async function googleGiris() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        
+        // Kullanıcı dökümanını kontrol et, yoksa oluştur
+        const userRef = db.collection("Kullanicilar").doc(user.uid);
+        const userDoc = await userRef.get();
+        
+        if (!userDoc.exists) {
+            await userRef.set({
+                isim: user.displayName || "İsimsiz Şair",
+                email: user.email,
+                kayitTarihi: firebase.firestore.FieldValue.serverTimestamp(),
+                mahlas: "",
+                rol: "yazar"
+            });
+        }
+        
+        showToast('Hoş Geldiniz', `Merhaba ${user.displayName || ''}!`, 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    } catch (err) {
+        console.error(err);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            showToast('Hata', 'Google girişi sırasında bir sorun oluştu.', 'error');
+        }
+    }
+}
+
 // ==========================================================
 // 🔒 GÜVENLİK & PLATFORM SAĞLIĞI
 // ==========================================================
