@@ -917,15 +917,17 @@ function initFilters() {
             container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
 
+            // Buton metnini temizleyerek alıyoruz (Boşluk hatalarını önler)
+            const filterText = e.target.innerText.trim();
+
             // Filtre tıklandığında aramayı da sıfırla
             const sInput = document.getElementById('searchInput');
             if (sInput) sInput.value = '';
 
             if (container.id === 'klasikFilters') {
-                const filterText = e.target.innerText.trim();
                 renderKlasikler(filterText);
             } else {
-                renderPoems(e.target.innerText);
+                renderPoems(filterText);
             }
         });
     });
