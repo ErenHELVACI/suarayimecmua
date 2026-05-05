@@ -1689,29 +1689,30 @@ section, header, footer, .container {
   overflow-x: hidden;
 }
 
-/* ---- GOOGLE SIGN IN BUTTON ---- */
+/* ---- GOOGLE SIGN IN BUTTON (PREMIUM STYLE) ---- */
 .btn-google {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 0.8rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border-hard);
-  border-radius: var(--r);
-  color: var(--text-main);
-  font-family: var(--font-sans);
+  padding: 0.75rem 1.5rem;
+  background: #ffffff !important;
+  border: 1px solid #747775 !important;
+  border-radius: 100px !important; /* Tam yuvarlak (Pill) */
+  color: #1f1f1f !important;
+  font-family: 'Roboto', 'Jost', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s ease;
+  box-shadow: none;
+  margin: 1rem 0;
 }
 .btn-google:hover {
-  background: var(--bg-color-alt);
-  border-color: var(--gold);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  background: #f8f9fa !important;
+  border-color: #747775 !important;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3.1px 0 rgba(60,64,67,.15) !important;
 }
 .btn-google svg {
   flex-shrink: 0;

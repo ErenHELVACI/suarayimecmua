@@ -94,11 +94,14 @@ function initAuth() {
     auth.onAuthStateChanged((user) => {
         const desktop = document.getElementById('authDesktop');
         const mobile = document.getElementById('authMobile');
+        const googlePrompt = document.getElementById('googleAuthPrompt');
 
         if (user) {
             const html = `<a href="profil.html" class="btn btn-outline" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem; border-color:var(--gold); color:var(--gold);">Profilim</a>`;
             if (desktop) desktop.innerHTML = html;
             if (mobile) mobile.innerHTML = html;
+
+            if (googlePrompt) googlePrompt.style.display = 'none';
 
             // Eğer profil sayfasındaysak bilgileri çek
             if (window.location.pathname.includes('profil.html')) {
@@ -114,6 +117,8 @@ function initAuth() {
             const html = `<a href="auth.html" class="btn btn-primary" style="padding:0.4rem 1rem; border-radius:var(--r); font-size:0.9rem;">Giriş / Kayıt</a>`;
             if (desktop) desktop.innerHTML = html;
             if (mobile) mobile.innerHTML = html;
+
+            if (googlePrompt) googlePrompt.style.display = 'block';
 
             // Profil sayfasında ama giriş yapmamışsa anasayfaya at
             if (window.location.pathname.includes('profil.html')) {
@@ -1235,8 +1240,7 @@ async function submitEser(event) {
     // OTURUM KONTROLÜ
     const user = auth.currentUser;
     if (!user) {
-        showToast('Yetkisiz İşlem', 'Eser tescil etmek için önce giriş yapmalısınız.', 'error');
-        setTimeout(() => { window.location.href = 'auth.html'; }, 2000);
+        showToast('Yetkisiz İşlem', 'Eser tescil etmek için önce giriş yapmalısınız. Yukarıdaki hızlı giriş butonunu kullanabilirsiniz.', 'error');
         return;
     }
 
