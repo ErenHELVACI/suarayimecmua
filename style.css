@@ -1640,15 +1640,9 @@ img { display: block; max-width: 100%; }
   .form-submit .btn { width: 100%; }
 }
 
-/* Global Overflow Fix */
-section, header, footer {
-  width: 100% !important;
-  overflow-x: hidden !important;
-}
-.container {
-  max-width: 100% !important;
-  width: 100% !important;
-  overflow-x: hidden !important;
+/* Global Overflow Fix (Sadece taşmaları engellemek için) */
+section, header, footer, .container {
+  overflow-x: hidden;
 }
 
 
